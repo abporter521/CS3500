@@ -9,6 +9,10 @@ using System.Threading;
 * @author Andrew B Porter
 * 31 August 2020
 */
+
+//ASSUMPTIONS TO CHECK IF SIMPLE TEST FAILS-- REGEX STATEMENT (L23), TOKEN ARRAY SIZE (L30), int.TRYPARSE method
+//TODO: TEST CASES, REMOVE VALEMPTY IF POSSIBLE
+
 namespace FormulaEvaluator
 {
     public static class Evaluator
@@ -19,15 +23,15 @@ namespace FormulaEvaluator
         //variable pattern will never change.  This is why it is static
         static string variablePattern = "/[a-zA-Z]+[0-9]+/";
         static Regex variableName = new Regex(variablePattern);
+
         public static int Evaluate (String exp, Lookup variableEval)
         {
             bool OpEmpty = true;
-            bool ValEmpty = true;
+            //bool ValEmpty = true;
             string[] tokens = new string[exp.Length]; //POSSIBLE ERROR HERE WITH LENGTH
             Stack <string> operators = new Stack<string>();
             Stack<int> values = new Stack<int>();
-            int finalValue = 0;
-
+            
             //Parse string into an array to evaluate separately
             tokens = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
             
@@ -50,7 +54,7 @@ namespace FormulaEvaluator
                             break;
                         default:
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
                     }
                 }
@@ -60,14 +64,14 @@ namespace FormulaEvaluator
                     values.Push(i);
 
                 // if token is * or /
-                if (tok == "*" || tok == "/")
+                else if (tok == "*" || tok == "/")
                 {
                     operators.Push(tok);
                     OpEmpty = false;
                 }
 
                 //if token is a variable
-                if (variableName.IsMatch(tok) && !OpEmpty)
+                else if (variableName.IsMatch(tok) && !OpEmpty)
                 {
                     i = variableEval(tok);
                     switch (operators.Peek())
@@ -82,14 +86,14 @@ namespace FormulaEvaluator
                             break;
                         default:
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
                     }
 
                 }
 
                 //if token is + or -
-                if (tok == "+" || tok == "-")
+                else if (tok == "+" || tok == "-")
                 {
                     switch (operators.Peek())
                     {
@@ -97,13 +101,13 @@ namespace FormulaEvaluator
                             i = values.Pop() + values.Pop();
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
                         case "-":
                             i = values.Pop() - values.Pop();
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
                         default:
                             operators.Push(tok);
@@ -115,14 +119,14 @@ namespace FormulaEvaluator
                 }
 
                 //if token is (
-                if (tok == "(")
+                else if (tok == "(")
                 {
                     operators.Push(tok);
                     OpEmpty = false;
                 }
 
                 //if token is )
-                if (tok == ")")
+                else if (tok == ")")
                 {
                     switch (operators.Peek())
                     {
@@ -130,31 +134,39 @@ namespace FormulaEvaluator
                             i = values.Pop() + values.Pop();
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            if (operators.Peek() == "(")
+                                operators.Pop();
+                            //ValEmpty = false;
                             break;
 
                         case "-":
                             i = values.Pop() - values.Pop();
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            if (operators.Peek() == "(")
+                                operators.Pop();
+                            // ValEmpty = false;
                             break;
                         case "(":
                             operators.Pop();
                             break;
+                    }
+                     switch (operators.Peek())
+                     { 
                         case "*":
                             i = values.Pop() * values.Pop();
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
                         case "/":
-                            i = values.Pop() / values.Pop();
+                            int divisor = values.Pop();
+                            i = values.Pop() / divisor;
                             operators.Pop();
                             values.Push(i);
-                            ValEmpty = false;
+                            //ValEmpty = false;
                             break;
-                    }
+                     }
                 }
             }
 
@@ -171,6 +183,7 @@ namespace FormulaEvaluator
             }
             else if (operators.Count == 0)
                 return values.Pop();
+            
             return -1; //shows error
         }
                
