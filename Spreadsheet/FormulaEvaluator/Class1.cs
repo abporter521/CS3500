@@ -16,6 +16,7 @@ namespace FormulaEvaluator
        
 
         public delegate int Lookup(String v);
+        //variable pattern will never change.  This is why it is static
         static string variablePattern = "/[a-zA-Z]+[0-9]+/";
         static Regex variableName = new Regex(variablePattern);
         public static int Evaluate (String exp, Lookup variableEval)
@@ -39,17 +40,24 @@ namespace FormulaEvaluator
                 {
                     switch (operators.Peek())
                     {
-                        case "*": values.Push(values.Pop() * i);
+                        case "*":
+                            values.Push(values.Pop() * i);
                             operators.Pop();
                             break;
-                        case "/": values.Push(values.Pop() / i);
+                        case "/":
+                            values.Push(values.Pop() / i);
                             operators.Pop();
                             break;
-                        default: values.Push(i);
+                        default:
+                            values.Push(i);
                             ValEmpty = false;
-                            break;               
+                            break;
                     }
                 }
+
+                //if the first token of the whole expression is an integer
+                else if (int.TryParse(tok, out i) && OpEmpty)
+                    values.Push(i);
 
                 // if token is * or /
                 if (tok == "*" || tok == "/")
@@ -149,10 +157,22 @@ namespace FormulaEvaluator
                     }
                 }
             }
-            
-                //Pop stacks and return value
-            return 0;
+
+            //Pop stacks and return value
+            if (operators.Count == 1)
+            {
+                if (values.Count == 2) //can remove this when process is better.
+                {
+                    if (operators.Peek() == "+")
+                        return values.Pop() + values.Pop();
+                    else if (operators.Peek() == "-")
+                        return values.Pop() - values.Pop();
+                }
+            }
+            else if (operators.Count == 0)
+                return values.Pop();
+            return -1; //shows error
         }
-       
+               
     }
 }
