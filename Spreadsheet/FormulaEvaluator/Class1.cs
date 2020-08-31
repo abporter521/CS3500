@@ -57,6 +57,7 @@ namespace FormulaEvaluator
                     operators.Push(tok);
                     OpEmpty = false;
                 }
+
                 //if token is a variable
                 if (variableName.IsMatch(tok) && !OpEmpty)
                 {
@@ -80,13 +81,77 @@ namespace FormulaEvaluator
                 }
 
                 //if token is + or -
-                
+                if (tok == "+" || tok == "-")
+                {
+                    switch (operators.Peek())
+                    {
+                        case "+":
+                            i = values.Pop() + values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                        case "-":
+                            i = values.Pop() - values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                        default:
+                            operators.Push(tok);
+                            OpEmpty = false;
+                            break;
+
+                    }
+
+                }
+
                 //if token is (
+                if (tok == "(")
+                {
+                    operators.Push(tok);
+                    OpEmpty = false;
+                }
 
+                //if token is )
+                if (tok == ")")
+                {
+                    switch (operators.Peek())
+                    {
+                        case "+":
+                            i = values.Pop() + values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
 
+                        case "-":
+                            i = values.Pop() - values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                        case "(":
+                            operators.Pop();
+                            break;
+                        case "*":
+                            i = values.Pop() * values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                        case "/":
+                            i = values.Pop() / values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                    }
+                }
             }
-            //Pop stacks and return value
-            return finalValue;
+            
+                //Pop stacks and return value
+            return 0;
         }
        
     }
