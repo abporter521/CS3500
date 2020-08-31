@@ -13,8 +13,11 @@ namespace FormulaEvaluator
 {
     public static class Evaluator
     {
-        public delegate int Lookup(String v);
+       
 
+        public delegate int Lookup(String v);
+        static string variablePattern = "/[a-zA-Z]+[0-9]+/";
+        static Regex variableName = new Regex(variablePattern);
         public static int Evaluate (String exp, Lookup variableEval)
         {
             bool OpEmpty = true;
@@ -23,7 +26,7 @@ namespace FormulaEvaluator
             Stack <string> operators = new Stack<string>();
             Stack<int> values = new Stack<int>();
             int finalValue = 0;
-            
+
             //Parse string into an array to evaluate separately
             tokens = Regex.Split(exp, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
             
@@ -50,9 +53,31 @@ namespace FormulaEvaluator
 
                 // if token is * or /
                 if (tok == "*" || tok == "/")
+                {
                     operators.Push(tok);
+                    OpEmpty = false;
+                }
                 //if token is a variable
-                if(tok == )
+                if (variableName.IsMatch(tok) && !OpEmpty)
+                {
+                    i = variableEval(tok);
+                    switch (operators.Peek())
+                    {
+                        case "*":
+                            values.Push(values.Pop() * i);
+                            operators.Pop();
+                            break;
+                        case "/":
+                            values.Push(values.Pop() / i);
+                            operators.Pop();
+                            break;
+                        default:
+                            values.Push(i);
+                            ValEmpty = false;
+                            break;
+                    }
+
+                }
 
                 //if token is + or -
                 
