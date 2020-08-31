@@ -17,9 +17,11 @@ namespace FormulaEvaluator
 
         public static int Evaluate (String exp, Lookup variableEval)
         {
+            bool OpEmpty = true;
+            bool ValEmpty = true;
             string[] tokens = new string[exp.Length]; //POSSIBLE ERROR HERE WITH LENGTH
-            Stack <string> operators;
-            Stack<string> values;
+            Stack <string> operators = new Stack<string>();
+            Stack<int> values = new Stack<int>();
             int finalValue = 0;
             
             //Parse string into an array to evaluate separately
@@ -29,8 +31,33 @@ namespace FormulaEvaluator
             foreach(string tok in tokens)
             {
                 int i = 0;
-                if (int.TryParse(tok, out i) && operators.Peek() == "*")
-                    finalValue += 1;
+                //If token is an integer
+                if (int.TryParse(tok, out i) && !OpEmpty)
+                {
+                    switch (operators.Peek())
+                    {
+                        case "*": values.Push(values.Pop() * i);
+                            operators.Pop();
+                            break;
+                        case "/": values.Push(values.Pop() / i);
+                            operators.Pop();
+                            break;
+                        default: values.Push(i);
+                            ValEmpty = false;
+                            break;               
+                    }
+                }
+
+                // if token is * or /
+                if (tok == "*" || tok == "/")
+                    operators.Push(tok);
+                //if token is a variable
+                if(tok == )
+
+                //if token is + or -
+                
+                //if token is (
+
 
             }
             //Pop stacks and return value
