@@ -140,7 +140,8 @@ namespace FormulaEvaluator
                             break;
 
                         case "-":
-                            i = values.Pop() - values.Pop();
+                            int subtraction = values.Pop();
+                            i = values.Pop() - subtraction;
                             operators.Pop();
                             values.Push(i);
                             if (operators.Peek() == "(")
