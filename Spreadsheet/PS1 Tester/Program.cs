@@ -11,8 +11,9 @@ namespace PS1_Tester
     { 
         static void Main(string[] args)
         {
-            String formula = "4+17";
+            String formula = "(23-5) / 6";
             Console.WriteLine(Evaluator.Evaluate(formula, fieldFinder.referencePicker));
+            Console.ReadLine();
         }
     }
 
