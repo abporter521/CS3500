@@ -71,7 +71,7 @@ namespace FormulaEvaluator
                 }
 
                 //if token is a variable
-                else if (variableName.IsMatch(tok) && !OpEmpty)
+                else if (variableName.IsMatch(tok))
                 {
                     i = variableEval(tok);
                     switch (operators.Peek())
@@ -95,27 +95,35 @@ namespace FormulaEvaluator
                 //if token is + or -
                 else if (tok == "+" || tok == "-")
                 {
-                    switch (operators.Peek())
+                    if (!OpEmpty)
                     {
-                        case "+":
-                            i = values.Pop() + values.Pop();
-                            operators.Pop();
-                            values.Push(i);
-                            //ValEmpty = false;
-                            break;
-                        case "-":
-                            i = values.Pop() - values.Pop();
-                            operators.Pop();
-                            values.Push(i);
-                            //ValEmpty = false;
-                            break;
-                        default:
-                            operators.Push(tok);
-                            OpEmpty = false;
-                            break;
+                        switch (operators.Peek())
+                        {
+                            case "+":
+                                i = values.Pop() + values.Pop();
+                                operators.Pop();
+                                values.Push(i);
+                                //ValEmpty = false;
+                                break;
+                            case "-":
+                                i = values.Pop() - values.Pop();
+                                operators.Pop();
+                                values.Push(i);
+                                //ValEmpty = false;
+                                break;
+                            default:
+                                operators.Push(tok);
+                                OpEmpty = false;
+                                break;
 
+                        }
+                       
                     }
-
+                    else
+                    {
+                        operators.Push(tok);
+                        OpEmpty = false;
+                    }
                 }
 
                 //if token is (
@@ -179,7 +187,10 @@ namespace FormulaEvaluator
                     if (operators.Peek() == "+")
                         return values.Pop() + values.Pop();
                     else if (operators.Peek() == "-")
-                        return values.Pop() - values.Pop();
+                    {
+                        int subtractor = values.Pop();
+                        return values.Pop() - subtractor;
+                    }
                 }
             }
             else if (operators.Count == 0)
