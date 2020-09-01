@@ -27,7 +27,6 @@ namespace FormulaEvaluator
         public static int Evaluate (String exp, Lookup variableEval)
         {
             bool OpEmpty = true;
-            //bool ValEmpty = true;
             string[] tokens = new string[exp.Length]; //POSSIBLE ERROR HERE WITH LENGTH
             Stack <string> operators = new Stack<string>();
             Stack<int> values = new Stack<int>();
@@ -54,7 +53,6 @@ namespace FormulaEvaluator
                             break;
                         default:
                             values.Push(i);
-                            //ValEmpty = false;
                             break;
                     }
                 }
@@ -86,7 +84,6 @@ namespace FormulaEvaluator
                             break;
                         default:
                             values.Push(i);
-                            //ValEmpty = false;
                             break;
                     }
 
@@ -103,13 +100,11 @@ namespace FormulaEvaluator
                                 i = values.Pop() + values.Pop();
                                 operators.Pop();
                                 values.Push(i);
-                                //ValEmpty = false;
                                 break;
                             case "-":
                                 i = values.Pop() - values.Pop();
                                 operators.Pop();
                                 values.Push(i);
-                                //ValEmpty = false;
                                 break;
                             default:
                                 operators.Push(tok);
@@ -144,7 +139,6 @@ namespace FormulaEvaluator
                             values.Push(i);
                             if (operators.Peek() == "(")
                                 operators.Pop();
-                            //ValEmpty = false;
                             break;
 
                         case "-":
@@ -153,29 +147,35 @@ namespace FormulaEvaluator
                             operators.Pop();
                             values.Push(i);
                             if (operators.Peek() == "(")
+                            {
                                 operators.Pop();
-                            // ValEmpty = false;
-                            break;
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                            }
+                                break;
                         case "(":
                             operators.Pop();
+                            if (operators.Count == 0)
+                                OpEmpty = true;
                             break;
                     }
-                     switch (operators.Peek())
-                     { 
-                        case "*":
-                            i = values.Pop() * values.Pop();
-                            operators.Pop();
-                            values.Push(i);
-                            //ValEmpty = false;
-                            break;
-                        case "/":
-                            int divisor = values.Pop();
-                            i = values.Pop() / divisor;
-                            operators.Pop();
-                            values.Push(i);
-                            //ValEmpty = false;
-                            break;
-                     }
+                    if (!OpEmpty)
+                    {
+                        switch (operators.Peek())
+                        {
+                            case "*":
+                                i = values.Pop() * values.Pop();
+                                operators.Pop();
+                                values.Push(i);
+                                break;
+                            case "/":
+                                int divisor = values.Pop();
+                                i = values.Pop() / divisor;
+                                operators.Pop();
+                                values.Push(i);
+                                break;
+                        }
+                    }
                 }
             }
 
