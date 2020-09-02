@@ -21,7 +21,7 @@ namespace FormulaEvaluator
 
         public delegate int Lookup(String v);
         //variable pattern will never change.  This is why it is static
-        static string variablePattern = "/[a-zA-Z]+[0-9]+/";
+        static string variablePattern = "^[a-zA-Z]+[0-9]+$";
         static Regex variableName = new Regex(variablePattern);
 
         public static int Evaluate (String exp, Lookup variableEval)
@@ -37,6 +37,9 @@ namespace FormulaEvaluator
             //Move through the tokens and perform operations
             foreach(string tok in tokens)
             {
+                string trim = tok.Trim();
+                if (tok == "" || tok == " ")
+                    continue;
                 int i = 0;
                 //If token is an integer
                 if (int.TryParse(tok, out i) && !OpEmpty)
@@ -69,9 +72,9 @@ namespace FormulaEvaluator
                 }
 
                 //if token is a variable
-                else if (variableName.IsMatch(tok))
+                else if (variableName.IsMatch(trim))
                 {
-                    i = variableEval(tok);
+                    i = variableEval(trim);
                     switch (operators.Peek())
                     {
                         case "*":
@@ -100,11 +103,14 @@ namespace FormulaEvaluator
                                 i = values.Pop() + values.Pop();
                                 operators.Pop();
                                 values.Push(i);
+                                operators.Push(tok);
                                 break;
                             case "-":
-                                i = values.Pop() - values.Pop();
+                                int subtractor = values.Pop();
+                                i = values.Pop() - subtractor;
                                 operators.Pop();
                                 values.Push(i);
+                                operators.Push(tok);
                                 break;
                             default:
                                 operators.Push(tok);
@@ -138,7 +144,11 @@ namespace FormulaEvaluator
                             operators.Pop();
                             values.Push(i);
                             if (operators.Peek() == "(")
+                            {
                                 operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                            }
                             break;
 
                         case "-":
@@ -195,8 +205,8 @@ namespace FormulaEvaluator
             }
             else if (operators.Count == 0)
                 return values.Pop();
-            
-            return -1; //shows error
+
+            throw new ArgumentException("Incomplete formula");
         }
                
     }
