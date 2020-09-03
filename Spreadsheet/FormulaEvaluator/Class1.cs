@@ -229,6 +229,7 @@ namespace FormulaEvaluator
             catch (InvalidOperationException e)
             {
                 throw new ArgumentException("Incomplete formula.  Needs more operands for this operation.");
+
             }
         }
     }
