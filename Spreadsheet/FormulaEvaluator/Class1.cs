@@ -227,7 +227,7 @@ namespace FormulaEvaluator
                 else if (operators.Count == 0)
                     return values.Pop();
 
-                throw new ArgumentException("Incomplete formula. Needs more operands for this operation.");
+                throw new ArgumentException("Incomplete formula. Needs more operands for this operation or variable has illegal name.");
             }
             catch (InvalidOperationException e)
             {
