@@ -7,7 +7,8 @@ using System.Threading;
  * multipliation, division, addition, subtraction and parentheses. 2 stacks will be used to handle
 * order of operations. Variables with one or more letters followed by one or more numbers
 * can also be used in place of concrete values. The lookup of these variables will be 
-* supplied by a delgate given by the user.
+* supplied by a delgate given by the user. Exceptions will be thrown for null values, and invalid operator
+* placement such as 1++3.
 * 
 * @author Andrew B Porter
 * 31 August 2020
@@ -45,7 +46,8 @@ namespace FormulaEvaluator
                         continue;
                     int i = 0;
 
-                    //If token is an integer
+                    //If token is an integer, check for the next operator. If *, or / perform
+                    // the operation, otherwise push the integer
                     if (int.TryParse(tok, out i) && !OpEmpty)
                     {
                         switch (operators.Peek())
@@ -68,18 +70,19 @@ namespace FormulaEvaluator
                         }
                     }
 
-                    //if the first token of the whole expression is an integer
+                    //if the first token of the whole expression is an integer, push onto value stack
                     else if (int.TryParse(tok, out i) && OpEmpty)
                         values.Push(i);
 
-                    // if token is * or /
+                    // if token is * or /, push onto operator stack
                     else if (tok == "*" || tok == "/")
                     {
                         operators.Push(tok);
                         OpEmpty = false;
                     }
 
-                    //if token is a variable
+                    //if token is a variable, lookup variable value and perform same algorithm
+                    //as the integer section
                     else if (variableName.IsMatch(trim))
                     {
                         i = variableEval(trim);
@@ -108,7 +111,9 @@ namespace FormulaEvaluator
                         }
                     }
 
-                    //if token is + or -
+                    //if token is + or -, check if previous operator on stack is also + or -.
+                    //If so, perform the operation otherwise and add operator to stack, 
+                    //otherwise just add operator to stack
                     else if (tok == "+" || tok == "-")
                     {
                         if (!OpEmpty)
@@ -141,14 +146,15 @@ namespace FormulaEvaluator
                         }
                     }
 
-                    //if token is (
+                    //if token is (, push to operator stack
                     else if (tok == "(")
                     {
                         operators.Push(tok);
                         OpEmpty = false;
                     }
 
-                    //if token is )
+                    //if token is ), check if addition or subtraction was performed and perform it if possible
+                    //then check for multiplication or division.  If ( is found then pop
                     else if (tok == ")")
                     {
                         switch (operators.Peek())
@@ -210,7 +216,7 @@ namespace FormulaEvaluator
                     }
                 }
 
-                //Pop stacks and return value
+                //Pop stacks and return value. Value in operator stack should be + or -
                 if (operators.Count == 1)
                 {
                     if (values.Count == 2) 
@@ -224,9 +230,10 @@ namespace FormulaEvaluator
                         }
                     }
                 }
+                //Returns the value when there is only 1 value left in the value stack
                 else if (operators.Count == 0)
                     return values.Pop();
-
+                //Throws when illegal values are put in the formula.
                 throw new ArgumentException("Incomplete formula. Needs more operands for this operation or variable has illegal name.");
             }
             catch (InvalidOperationException e)
