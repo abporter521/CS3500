@@ -3,7 +3,7 @@ using System;
 using System.Data;
 
 /*
- * This is just a tester to be able to try out my arithmetic code.  Involves a reernce picker for variables of varying types
+ * This is just a tester to be able to try out my arithmetic code.  Involves a refernce picker for variables of varying types
  */
 namespace PS1_Tester
 {
@@ -11,7 +11,7 @@ namespace PS1_Tester
     { 
         static void Main(string[] args)
         {
-            String formula = "(6*(6+5)+5)-AB12+(10*12)";
+            String formula = " (4*8)*(7-3)/(7+5)+(8/2)*(3-2)+(4*3)";
             Console.WriteLine(Evaluator.Evaluate(formula, fieldFinder.referencePicker));
             Console.ReadLine();
         }
