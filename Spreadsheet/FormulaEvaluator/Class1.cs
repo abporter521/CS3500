@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using System.Threading;
-/*This project is used to evaluate simple infix arithmetic sequences such as 1+1.  2 stacks will be used to handle
+/*This project is used to evaluate infix arithmetic sequences such as 1+1. Allowed operations are
+ * multipliation, division, addition, subtraction and parentheses. 2 stacks will be used to handle
 * order of operations. Variables with one or more letters followed by one or more numbers
-* can also be used in place of concrete values
+* can also be used in place of concrete values. The lookup of these variables will be 
+* supplied by a delgate given by the user.
 * 
 * @author Andrew B Porter
 * 31 August 2020
@@ -22,11 +24,9 @@ namespace FormulaEvaluator
         static string variablePattern = "^[a-zA-Z]+[0-9]+$";
         static Regex variableName = new Regex(variablePattern);
 
-
-
         public static int Evaluate(String exp, Lookup variableEval)
         {
-            //Try catches an empty stack exception if operands are illegally placed such as --
+            //Try catches an empty stack exception caused when operands are illegally placed such as -- or *+
             try
             {
                 bool OpEmpty = true;
@@ -53,6 +53,8 @@ namespace FormulaEvaluator
                             case "*":
                                 values.Push(values.Pop() * i);
                                 operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
                                 break;
                             case "/":
                                 if (i == 0)
@@ -91,6 +93,8 @@ namespace FormulaEvaluator
                             case "*":
                                 values.Push(values.Pop() * i);
                                 operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
                                 break;
                             case "/":
                                 if (i == 0)
@@ -163,7 +167,6 @@ namespace FormulaEvaluator
 
                             case "-":
                                 int subtraction = values.Pop();
-
                                 i = values.Pop() - subtraction;
                                 operators.Pop();
                                 values.Push(i);
@@ -174,6 +177,7 @@ namespace FormulaEvaluator
                                         OpEmpty = true;
                                 }
                                 break;
+
                             case "(":
                                 operators.Pop();
                                 if (operators.Count == 0)
