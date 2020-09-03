@@ -55,6 +55,8 @@ namespace FormulaEvaluator
                                 operators.Pop();
                                 break;
                             case "/":
+                                if (i == 0)
+                                    throw new DivideByZeroException("Cannot divide by 0");
                                 values.Push(values.Pop() / i);
                                 operators.Pop();
                                 break;
@@ -91,6 +93,8 @@ namespace FormulaEvaluator
                                 operators.Pop();
                                 break;
                             case "/":
+                                if (i == 0)
+                                    throw new DivideByZeroException("Cannot divide by 0");
                                 values.Push(values.Pop() / i);
                                 operators.Pop();
                                 break;
@@ -98,7 +102,6 @@ namespace FormulaEvaluator
                                 values.Push(i);
                                 break;
                         }
-
                     }
 
                     //if token is + or -
@@ -147,9 +150,7 @@ namespace FormulaEvaluator
                         switch (operators.Peek())
                         {
                             case "+":
-                                int add = values.Pop();
-
-                                i = add + values.Pop();
+                                i = values.Pop() + values.Pop();
                                 operators.Pop();
                                 values.Push(i);
                                 if (operators.Peek() == "(")
@@ -183,9 +184,8 @@ namespace FormulaEvaluator
                         {
                             switch (operators.Peek())
                             {
-                                case "*":
-                                    int multiplier = values.Pop();
-                                    i = values.Pop() * multiplier;
+                                case "*":                                    
+                                    i = values.Pop() * values.Pop();
                                     operators.Pop();
                                     if (operators.Count == 0)
                                         OpEmpty = true;
@@ -193,6 +193,8 @@ namespace FormulaEvaluator
                                     break;
                                 case "/":
                                     int divisor = values.Pop();
+                                    if (divisor == 0)
+                                        throw new DivideByZeroException("Cannot divide by 0");
                                     i = values.Pop() / divisor;
                                     operators.Pop();
                                     if (operators.Count == 0)
