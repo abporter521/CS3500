@@ -11,9 +11,6 @@ using System.Threading;
 * 31 August 2020
 */
 
-//ASSUMPTIONS TO CHECK IF SIMPLE TEST FAILS-- REGEX STATEMENT (L23), TOKEN ARRAY SIZE (L30), int.TRYPARSE method
-//TODO: TEST CASES, REMOVE VALEMPTY IF POSSIBLE
-
 namespace FormulaEvaluator
 {
 
