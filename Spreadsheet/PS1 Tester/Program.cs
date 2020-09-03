@@ -11,7 +11,7 @@ namespace PS1_Tester
     { 
         static void Main(string[] args)
         {
-            String formula = "(23-5) / 6";
+            String formula = "(6*(6+5)+5)-AB12+(10*12)";
             Console.WriteLine(Evaluator.Evaluate(formula, fieldFinder.referencePicker));
             Console.ReadLine();
         }
@@ -22,7 +22,7 @@ namespace PS1_Tester
         public static int referencePicker(String k)
         {
             if (k == "A9")
-                return 111;
+                return 36;
             if (k == "AA9")
                 return 69;
             if (k == "A96")
