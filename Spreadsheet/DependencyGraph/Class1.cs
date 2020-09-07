@@ -72,7 +72,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int this[string s]
         {
-            get { return 0; }
+            get { return graph[s].GetDependees().Length; }
         }
 
 
@@ -99,7 +99,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            return graph[s].GetDependents();
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            return graph[s].GetDependees;
         }
 
 
@@ -145,6 +145,7 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
+
         }
 
 
@@ -229,6 +230,17 @@ namespace SpreadsheetUtilities
                 i++;
             }
             return depen;
+        }
+        public string[] GetDependees()
+        {
+            string[] dees = new string[dependees.Count()];
+            int i = 0;
+            foreach (Node d in dependees)
+            {
+                dees[i] = d.GetName();
+                i++;
+            }
+            return dees;
         }
         public void ClearDependents()
         {
