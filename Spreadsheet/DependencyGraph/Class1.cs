@@ -143,9 +143,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         /// <param name="s"></param>
         /// <param name="t"></param>
-        public void RemoveDependency(string s, string t)
+        public void RemoveDependency(string s, string t) //possible errors here with actual removal from list
         {
-
+            if(graph[s].RemoveDependentElements(graph[s],graph[t])
+                dependentPairs--;
         }
 
 
@@ -155,6 +156,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            dependentPairs = dependentPairs - graph[s].GetDependents().Count();
+            graph[s].ClearDependents();           
+            for (int i = 0; i < newDependents.Count(); i++)
+                AddDependency(s, newDependents[i]);
         }
 
 
@@ -164,6 +169,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
+            dependentPairs = dependentPairs - graph[s].GetDependees().Count();
+            graph[s].ClearDependees();           
+            for (int i = 0; i < newDependees.Count(); i++)
+               AddDependency(newDependees[i], s);
         }
 
     }
@@ -259,6 +268,17 @@ namespace SpreadsheetUtilities
         public bool HasDependees()
         {
             return hasDependees;
+        }
+        public bool RemoveDependentElements(Node s, Node t)
+        {
+            if (s.dependents.Contains(t))
+            {
+                dependents.Remove(t);
+                t.dependees.Remove(s);
+                return true;
+            }
+            return false;
+                
         }
     }
 }
