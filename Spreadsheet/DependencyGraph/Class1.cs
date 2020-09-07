@@ -121,11 +121,17 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t)
         {
-            if (graph.ContainsKey (s) && graph.ContainsKey(t))
-            {
-                graph[s].AddDependent(graph[t]);
-                graph[t].AddDependee(graph[s]);
-            }
+            bool containsS = graph.ContainsKey(s);
+            bool containsT = graph.ContainsKey(t);
+
+            if (!containsS)
+                graph.Add(s, new Node(s));
+            if (!containsT)
+                graph.Add(t, new Node(t));
+
+            graph[s].AddDependent(graph[t]);
+            graph[t].AddDependee(graph[s]);
+
         }
 
 
@@ -170,20 +176,30 @@ namespace SpreadsheetUtilities
             dependees = new List<Node>();
         }
 
+        public string getName()
+        {
+            return this.name;
+        }
         public void AddDependent(Node dependent)
         {
             if (!dependents.Contains(dependent))
-            {
-                this.dependents.Add(dependent);
-            }
+                this.dependents.Add(dependent);           
         }
-
         public void AddDependee(Node dependee)
         {
-            if (!dependees.Contains (dependee))
-            {
+            if (!dependees.Contains(dependee))
                 dependees.Add(dependee);
+        }
+        public string[] getDependents()
+        {
+            string[] depen = new string[dependents.Count()];
+            int i = 0;
+            foreach (Node d in dependents)
+            {
+                depen[i] = d.getName();
+                i++;
             }
+            return depen;
         }
 
     }
