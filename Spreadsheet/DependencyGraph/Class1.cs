@@ -81,7 +81,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(string s)
         {
-            return false;
+            return graph[s].HasDependents();
         }
 
 
@@ -89,9 +89,8 @@ namespace SpreadsheetUtilities
         /// Reports whether dependees(s) is non-empty.
         /// </summary>
         public bool HasDependees(string s)
-        {
-            if(graph[s].)
-            return false;
+        {        
+            return graph[s].HasDependees();
         }
 
 
@@ -168,13 +167,13 @@ namespace SpreadsheetUtilities
 
     }
 
-    class Node
+    public class Node
     {
-        string name;
-        List<Node> dependents;
-        List<Node> dependees;
-        bool hasDependents;
-        bool hasDependees;
+        private string name;
+        private List<Node> dependents;
+        private List<Node> dependees;
+        private bool hasDependents;
+        private bool hasDependees;
         public Node(string cellName)
         {
             name = cellName;
@@ -241,8 +240,13 @@ namespace SpreadsheetUtilities
             dependees = new List<Node>();
             hasDependees = false;
         }
-
-           
-
+        public bool HasDependents()
+        {
+            return hasDependents;
+        }
+        public bool HasDependees()
+        {
+            return hasDependees;
+        }
     }
 }
