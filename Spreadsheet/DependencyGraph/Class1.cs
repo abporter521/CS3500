@@ -43,12 +43,14 @@ namespace SpreadsheetUtilities
     public class DependencyGraph
     {
         Dictionary<string, Node> graph;
+        int dependentPairs;
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph()
         {
             graph = new Dictionary<string, Node>();
+            dependentPairs = 0;
         }
 
 
@@ -57,7 +59,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return this.dependentPairs; }
         }
 
 
@@ -88,6 +90,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {
+            if(graph[s].)
             return false;
         }
 
@@ -129,7 +132,8 @@ namespace SpreadsheetUtilities
             if (!containsT)
                 graph.Add(t, new Node(t));
 
-            graph[s].AddDependent(graph[t]);
+            if(graph[s].AddDependent(graph[t]))
+                dependentPairs++;
             graph[t].AddDependee(graph[s]);
 
         }
@@ -169,38 +173,76 @@ namespace SpreadsheetUtilities
         string name;
         List<Node> dependents;
         List<Node> dependees;
+        bool hasDependents;
+        bool hasDependees;
         public Node(string cellName)
         {
             name = cellName;
             dependents = new List<Node>();
             dependees = new List<Node>();
+            hasDependees = false;
+            hasDependents = false;
         }
 
-        public string getName()
+        public string GetName()
         {
             return this.name;
         }
-        public void AddDependent(Node dependent)
+        /*Helper method to add dependents.
+         * 
+         * param Node dependent-- the node for which this node must be evaluated
+         *      first in order for dependent node to be calculated
+         * return bool-- if addition was made return true else return false
+         */
+        public bool AddDependent(Node dependent)
         {
             if (!dependents.Contains(dependent))
-                this.dependents.Add(dependent);           
+            {
+                this.dependents.Add(dependent);
+                hasDependents = true;
+                return true;
+            }
+            return false;           
         }
-        public void AddDependee(Node dependee)
+        /*Helper method to add dependees.
+         * 
+         * param Node dependee -- a node which must be calculated before
+         *      this node can be evaluated
+         * return bool -- if addition was executed succesfully, return true
+         */
+        public bool AddDependee(Node dependee)
         {
             if (!dependees.Contains(dependee))
+            {
                 dependees.Add(dependee);
+                hasDependees = true;
+                return true;
+            }
+            return false;
         }
-        public string[] getDependents()
+        public string[] GetDependents()
         {
             string[] depen = new string[dependents.Count()];
             int i = 0;
             foreach (Node d in dependents)
             {
-                depen[i] = d.getName();
+                depen[i] = d.GetName();
                 i++;
             }
             return depen;
         }
+        public void ClearDependents()
+        {
+            dependents = new List<Node>();
+            hasDependents = false;
+        }
+        public void ClearDependees()
+        {
+            dependees = new List<Node>();
+            hasDependees = false;
+        }
+
+           
 
     }
 }
