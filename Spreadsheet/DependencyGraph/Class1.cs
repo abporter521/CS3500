@@ -3,6 +3,9 @@
 // Version 1.2 - Daniel Kopta 
 //               (Clarified meaning of dependent and dependee.)
 //               (Clarified names in solution/project structure.)
+// Version 1.3 - Andrew Porter, 7 Sept 2020
+//               Filled in skeleton for PS2  
+//               Uses 2 dictionaries to keep track of dependencies between 2 string variables
 
 using System;
 using System.Collections;
@@ -64,7 +67,6 @@ namespace SpreadsheetUtilities
             get { return this.dependentPairs; }
         }
 
-
         /// <summary>
         /// The size of dependees(s).
         /// This property is an example of an indexer.  If dg is a DependencyGraph, you would
@@ -77,7 +79,6 @@ namespace SpreadsheetUtilities
             get { return dependees[s].Count(); }
         }
 
-
         /// <summary>
         /// Reports whether dependents(s) is non-empty.
         /// </summary>
@@ -87,7 +88,6 @@ namespace SpreadsheetUtilities
                 return true;
             return false;
         }
-
 
         /// <summary>
         /// Reports whether dependees(s) is non-empty.
@@ -99,8 +99,6 @@ namespace SpreadsheetUtilities
             return false;
         }
         
-
-
         /// <summary>
         /// Enumerates dependents(s).
         /// </summary>
@@ -116,7 +114,6 @@ namespace SpreadsheetUtilities
         {
             return dependees[s];
         }
-
 
         /// <summary>
         /// <para>Adds the ordered pair (s,t), if it doesn't exist</para>
@@ -153,7 +150,6 @@ namespace SpreadsheetUtilities
             }
         }
 
-
         /// <summary>
         /// Removes the ordered pair (s,t), if it exists
         /// </summary>
@@ -161,6 +157,8 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t) //Test if s doesnt exist
         {
+            //If s exists in the graph, it will remove its
+            //dependent and s will be taken off t's dependee list
             if (dependents[s].Contains(t))
             {
                 dependentPairs--;
@@ -168,7 +166,6 @@ namespace SpreadsheetUtilities
                 dependees[t].Remove(s);
             }
         }
-
 
         /// <summary>
         /// Removes all existing ordered pairs of the form (s,r).  Then, for each
@@ -185,124 +182,19 @@ namespace SpreadsheetUtilities
                 AddDependency(s, newDependents.ElementAt(i));
         }
 
-
         /// <summary>
         /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
         /// t in newDependees, adds the ordered pair (t,s).
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
+            //Removes every instance of s in the dependents list
             foreach (string dpt in dependees[s])
                 RemoveDependency(dpt, s);
 
+            //Adds dependees to s
             for (int i = 0; i < newDependees.Count(); i++)
                AddDependency(newDependees.ElementAt(i), s);
         }
-
     }
-
-   /* public class Node
-    {
-        private string name;
-        private List<Node> dependents;
-        private List<Node> dependees;
-        private bool hasDependents;
-        private bool hasDependees;
-        public Node(string cellName)
-        {
-            name = cellName;
-            dependents = new List<Node>();
-            dependees = new List<Node>();
-            hasDependees = false;
-            hasDependents = false;
-        }
-
-        public string GetName()
-        {
-            return this.name;
-        }
-        /*Helper method to add dependents.
-         * 
-         * param Node dependent-- the node for which this node must be evaluated
-         *      first in order for dependent node to be calculated
-         * return bool-- if addition was made return true else return false
-         
-        public bool AddDependent(Node dependent)
-        {
-            if (!dependents.Contains(dependent))
-            {
-                this.dependents.Add(dependent);
-                hasDependents = true;
-                return true;
-            }
-            return false;           
-        }
-        /*Helper method to add dependees.
-         * 
-         * param Node dependee -- a node which must be calculated before
-         *      this node can be evaluated
-         * return bool -- if addition was executed succesfully, return true
-       
-        public bool AddDependee(Node dependee)
-        {
-            if (!dependees.Contains(dependee))
-            {
-                dependees.Add(dependee);
-                hasDependees = true;
-                return true;
-            }
-            return false;
-        }
-        public string[] GetDependents()
-        {
-            string[] depen = new string[dependents.Count()];
-            int i = 0;
-            foreach (Node d in dependents)
-            {
-                depen[i] = d.GetName();
-                i++;
-            }
-            return depen;
-        }
-        public string[] GetDependees()
-        {
-            string[] dees = new string[dependees.Count()];
-            int i = 0;
-            foreach (Node d in dependees)
-            {
-                dees[i] = d.GetName();
-                i++;
-            }
-            return dees;
-        }
-        public void ClearDependents()
-        {
-            dependents = new List<Node>();
-            hasDependents = false;
-        }
-        public void ClearDependees()
-        {
-            dependees = new List<Node>();
-            hasDependees = false;
-        }
-        public bool HasDependents()
-        {
-            return hasDependents;
-        }
-        public bool HasDependees()
-        {
-            return hasDependees;
-        }
-        public bool RemoveDependentElements(Node s, Node t)
-        {
-            if (s.dependents.Contains(t))
-            {
-                dependents.Remove(t);
-                t.dependees.Remove(s);
-                return true;
-            }
-            return false;
-                
-        }
-    }*/
 }
