@@ -104,7 +104,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return dependents[s];
+            if(dependents.ContainsKey(s))
+                return dependents[s];
+            return new HashSet<string>();
         }
 
         /// <summary>
@@ -112,7 +114,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return dependees[s];
+            if(dependees.ContainsKey(s))
+                return dependees[s];
+            return new HashSet<string>();
         }
 
         /// <summary>
@@ -173,13 +177,27 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
-            //Removes s from the dependees list
-            foreach(string dpee in dependents[s])
-                RemoveDependency(s, dpee);
-
+            if (dependents.ContainsKey(s))
+            {
+                int k = dependents[s].Count();
+                //Removes s from the dependees list
+                for (int i = 0; i < k; i++)
+                {
+                    string dpee = dependents[s].ElementAt(i);
+                    RemoveDependency(s, dpee);
+                }
+            }
             //Adds the new dependents to s
             for (int i = 0; i < newDependents.Count(); i++)
                 AddDependency(s, newDependents.ElementAt(i));
+            if (newDependents.Count() == 0)
+            {
+                if (dependents.ContainsKey(s))
+                    dependents[s] = new HashSet<string>();
+                else
+                    dependents.Add(s, new HashSet<string>());
+            }
+
         }
 
         /// <summary>
@@ -188,13 +206,26 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
-            //Removes every instance of s in the dependents list
-            foreach (string dpt in dependees[s])
-                RemoveDependency(dpt, s);
-
+            if (dependees.ContainsKey(s))
+            {
+                int k = dependees[s].Count();
+                //Removes every instance of s in the dependents list
+                for (int i = 0; i < k; i++)
+                {
+                    string dpt = dependees[s].ElementAt(0);
+                    RemoveDependency(dpt, s);
+                }
+            }
             //Adds dependees to s
             for (int i = 0; i < newDependees.Count(); i++)
                AddDependency(newDependees.ElementAt(i), s);
+            if (newDependees.Count() == 0)
+            {
+                if (dependees.ContainsKey(s))
+                    dependees[s] = new HashSet<string>();
+                else
+                    dependees.Add(s, new HashSet<string>());
+            }
         }
     }
 }
