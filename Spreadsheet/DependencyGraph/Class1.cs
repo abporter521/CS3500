@@ -42,14 +42,16 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class DependencyGraph
     {
-        Dictionary<string, Node> graph;
+        Dictionary<string, HashSet<string>> dependents;
+        Dictionary<string, HashSet<string>> dependees;
         int dependentPairs;
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
         public DependencyGraph()
         {
-            graph = new Dictionary<string, Node>();
+            dependents = new Dictionary<string, HashSet<string>>();
+            dependees = new Dictionary<string, HashSet<string>>();
             dependentPairs = 0;
         }
 
@@ -72,7 +74,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int this[string s]
         {
-            get { return graph[s].GetDependees().Length; }
+            get { return dependees[s].Count(); }
         }
 
 
@@ -81,7 +83,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(string s)
         {
-            return graph[s].HasDependents();
+            if(dependents[s].Count() == 0)
+                return true;
+            return false;
         }
 
 
@@ -90,8 +94,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {        
-            return graph[s].HasDependees();
+            if(dependees[s].Count() == 0)
+                return true;
+            return false;
         }
+        
 
 
         /// <summary>
@@ -99,7 +106,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return graph[s].GetDependents();
+            return dependents[s];
         }
 
         /// <summary>
@@ -107,7 +114,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return graph[s].GetDependees;
+            return dependees[s];
         }
 
 
@@ -123,18 +130,27 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t)
         {
-            bool containsS = graph.ContainsKey(s);
-            bool containsT = graph.ContainsKey(t);
+            bool containsS = dependents.ContainsKey(s);
+            bool containsT = dependees.ContainsKey(t);
 
+            //Creates an entry in the dictionary if s or t does
+            //not already exist
             if (!containsS)
-                graph.Add(s, new Node(s));
+                dependents.Add(s, new HashSet<string>());
             if (!containsT)
-                graph.Add(t, new Node(t));
+                dependees.Add(t, new HashSet<string>());
 
-            if(graph[s].AddDependent(graph[t]))
+            //Checks to see if the relation already occurs
+            //if not, it is created
+            if (!dependents[s].Contains(t))
+            {
                 dependentPairs++;
-            graph[t].AddDependee(graph[s]);
-
+                dependents[s].Add(t);
+            }
+            if (!dependees[t].Contains(s))
+            {
+                dependees[t].Add(s);
+            }
         }
 
 
@@ -143,10 +159,14 @@ namespace SpreadsheetUtilities
         /// </summary>
         /// <param name="s"></param>
         /// <param name="t"></param>
-        public void RemoveDependency(string s, string t) //possible errors here with actual removal from list
+        public void RemoveDependency(string s, string t) //Test if s doesnt exist
         {
-            if(graph[s].RemoveDependentElements(graph[s],graph[t])
+            if (dependents[s].Contains(t))
+            {
                 dependentPairs--;
+                dependents[s].Remove(t);
+                dependees[t].Remove(s);
+            }
         }
 
 
@@ -156,10 +176,13 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
-            dependentPairs = dependentPairs - graph[s].GetDependents().Count();
-            graph[s].ClearDependents();           
+            //Removes s from the dependees list
+            foreach(string dpee in dependents[s])
+                RemoveDependency(s, dpee);
+
+            //Adds the new dependents to s
             for (int i = 0; i < newDependents.Count(); i++)
-                AddDependency(s, newDependents[i]);
+                AddDependency(s, newDependents.ElementAt(i));
         }
 
 
@@ -169,15 +192,16 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
-            dependentPairs = dependentPairs - graph[s].GetDependees().Count();
-            graph[s].ClearDependees();           
+            foreach (string dpt in dependees[s])
+                RemoveDependency(dpt, s);
+
             for (int i = 0; i < newDependees.Count(); i++)
-               AddDependency(newDependees[i], s);
+               AddDependency(newDependees.ElementAt(i), s);
         }
 
     }
 
-    public class Node
+   /* public class Node
     {
         private string name;
         private List<Node> dependents;
@@ -202,7 +226,7 @@ namespace SpreadsheetUtilities
          * param Node dependent-- the node for which this node must be evaluated
          *      first in order for dependent node to be calculated
          * return bool-- if addition was made return true else return false
-         */
+         
         public bool AddDependent(Node dependent)
         {
             if (!dependents.Contains(dependent))
@@ -218,7 +242,7 @@ namespace SpreadsheetUtilities
          * param Node dependee -- a node which must be calculated before
          *      this node can be evaluated
          * return bool -- if addition was executed succesfully, return true
-         */
+       
         public bool AddDependee(Node dependee)
         {
             if (!dependees.Contains(dependee))
@@ -280,5 +304,5 @@ namespace SpreadsheetUtilities
             return false;
                 
         }
-    }
+    }*/
 }
