@@ -45,9 +45,9 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class DependencyGraph
     {
-        Dictionary<string, HashSet<string>> dependents;
-        Dictionary<string, HashSet<string>> dependees;
-        int dependentPairs;
+        private Dictionary<string, HashSet<string>> dependents;
+        private Dictionary<string, HashSet<string>> dependees;
+        private int dependentPairs;
         /// <summary>
         /// Creates an empty DependencyGraph.
         /// </summary>
