@@ -84,19 +84,26 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependents(string s)
         {
+            //Checks to see if s first exists before finding its dependents
+            if (!dependents.ContainsKey(s))
+                return false;
+
             if(dependents[s].Count() == 0)
-                return true;
-            return false;
+                return false;
+            return true;
         }
 
         /// <summary>
         /// Reports whether dependees(s) is non-empty.
         /// </summary>
         public bool HasDependees(string s)
-        {        
+        {
+            if (!dependees.ContainsKey(s))
+                return false;
+
             if(dependees[s].Count() == 0)
-                return true;
-            return false;
+                return false;
+            return true;
         }
         
         /// <summary>
@@ -131,6 +138,9 @@ namespace SpreadsheetUtilities
         /// <param name="t"> t cannot be evaluated until s is</param>        /// 
         public void AddDependency(string s, string t)
         {
+            if (s == null || t == null)
+                throw new ArgumentNullException("Arguments cannot be null");
+
             bool containsS = dependents.ContainsKey(s);
             bool containsT = dependees.ContainsKey(t);
 
@@ -183,7 +193,7 @@ namespace SpreadsheetUtilities
                 //Removes s from the dependees list
                 for (int i = 0; i < k; i++)
                 {
-                    string dpee = dependents[s].ElementAt(i);
+                    string dpee = dependents[s].ElementAt(0);
                     RemoveDependency(s, dpee);
                 }
             }
@@ -219,8 +229,11 @@ namespace SpreadsheetUtilities
             //Adds dependees to s
             for (int i = 0; i < newDependees.Count(); i++)
                AddDependency(newDependees.ElementAt(i), s);
+           
+            //If the newDependees is an empty IEnumerable
             if (newDependees.Count() == 0)
             {
+                //Check to see if s is already in the dependees dictionary
                 if (dependees.ContainsKey(s))
                     dependees[s] = new HashSet<string>();
                 else
