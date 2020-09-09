@@ -292,21 +292,45 @@ namespace DevelopmentTests
             Assert.IsTrue(t.HasDependents("a"));
         }
      /// <summary>
-     /// 
+     /// Tests for exception of null dependency
      /// </summary>
        [TestMethod]
-       public void TestWithNull ()
+       [ExpectedException(typeof(ArgumentNullException))]
+        public void ReplaceDependenciesWithNull ()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "k");
+            t.AddDependency("b", "c");           
+            t.AddDependency("x", "b");
+            t.AddDependency("a", "z");
+            t.ReplaceDependees("b", new HashSet<string>() { null, "c" });
+        }
+        /// <summary>
+        /// Tests for exception with null dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void TestWithNull()
         {
             DependencyGraph t = new DependencyGraph();
             t.AddDependency("a", "k");
             t.AddDependency("b", "c");
-            Assert.ThrowsException<System.ArgumentNullException>(() => t.AddDependency("a", null));
-            Assert.ThrowsException<System.ArgumentNullException>(() => t.AddDependency(null, "b"));
+            t.AddDependency("x", null);
+            t.AddDependency("a", "z");
+            
+        }
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void GetDependeesNull()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "k");
+            t.AddDependency("b", "c");
             t.AddDependency("x", "b");
             t.AddDependency("a", "z");
-            Assert.ThrowsException<System.ArgumentNullException>(() => t.ReplaceDependees("b", new HashSet<string>() { null, "c" })) ;
-        }
+            t.GetDependees(null);
 
+        }
         /// <summary>
         /// Tests if size does not change due to added duplicates
         /// </summary>
@@ -322,6 +346,60 @@ namespace DevelopmentTests
             Assert.AreEqual(5, t.Size);
             t.AddDependency("x", "b");
             Assert.AreEqual(5, t.Size);
+        }
+        /// <summary>
+        /// Testing for correct size after multiple replace
+        /// dependees and dependents calls
+        /// </summary>
+        [TestMethod]
+        public void TestReplaceBothLists()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.ReplaceDependents("a", new HashSet<string> { "b","d","c","f"});
+            Assert.AreEqual(4, t.Size);
+            t.ReplaceDependents("b", new HashSet<string> { "a", "d", "c", "f" });
+            t.ReplaceDependents("c", new HashSet<string> { "b", "d", "a", "f" });
+            t.ReplaceDependents("d", new HashSet<string> { "b", "a", "c", "f" });
+            t.ReplaceDependents("f", new HashSet<string> { "b", "d", "c", "a" });
+            Assert.AreEqual(20, t.Size);
+            t.ReplaceDependents("a", new HashSet<string> { "b", "d"});
+            t.ReplaceDependents("b", new HashSet<string> { "j", "f", "c", "f" });
+            Assert.AreEqual(17, t.Size);
+            t.ReplaceDependees("c", new HashSet<string> { "j", "b" });
+            Assert.AreEqual(16, t.Size);
+            t.ReplaceDependees("a", new HashSet<string>());
+            t.ReplaceDependees("c", new HashSet<string>());
+            t.ReplaceDependees("b", new HashSet<string>());
+            t.ReplaceDependees("f", new HashSet<string>());
+            Assert.AreEqual(4, t.Size);
+        }
+        /// <summary>
+        /// Check if a letter can reference itself
+        /// </summary>
+        [TestMethod]
+        public void DependencyOnSelf()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.AddDependency("b", "c");
+            t.AddDependency("a","a");
+            Assert.AreEqual(3, t.Size);
+            t.AddDependency("a", "a");
+            Assert.AreEqual(3, t.Size);
+
+        }
+        /// <summary>
+        /// Test to see if by indirectly removing dependees,
+        /// I can get the remove counter below 0.
+        /// </summary>
+        [TestMethod]
+        public void RemoveDependencyWithReplaceDependees()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.ReplaceDependees("b", new HashSet<string> { "b" });
+            t.RemoveDependency("a", "b");
+            Assert.AreEqual(1, t.Size);
         }
     }
 }
