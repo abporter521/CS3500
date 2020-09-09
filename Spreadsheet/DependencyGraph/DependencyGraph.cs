@@ -3,7 +3,7 @@
 // Version 1.2 - Daniel Kopta 
 //               (Clarified meaning of dependent and dependee.)
 //               (Clarified names in solution/project structure.)
-// Version 1.3 - Andrew Porter, 7 Sept 2020
+// Version 1.3 - Andrew Porter, u1071655,  7 Sept 2020
 //               Filled in skeleton for PS2  
 //               Uses 2 dictionaries to keep track of dependencies between 2 string variables
 
@@ -57,7 +57,6 @@ namespace SpreadsheetUtilities
             dependees = new Dictionary<string, HashSet<string>>();
             dependentPairs = 0;
         }
-
 
         /// <summary>
         /// The number of ordered pairs in the DependencyGraph.
