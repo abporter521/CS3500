@@ -98,9 +98,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {
+            //Checks if key s exists before finding dependees
             if (!dependees.ContainsKey(s))
                 return false;
 
+            //If empty, then returns false
             if(dependees[s].Count() == 0)
                 return false;
             return true;
@@ -200,14 +202,16 @@ namespace SpreadsheetUtilities
             //Adds the new dependents to s
             for (int i = 0; i < newDependents.Count(); i++)
                 AddDependency(s, newDependents.ElementAt(i));
+
+            //If newDependents is a new IEnumerable
             if (newDependents.Count() == 0)
             {
+                //Check to see if s is already in dictionary
                 if (dependents.ContainsKey(s))
                     dependents[s] = new HashSet<string>();
                 else
                     dependents.Add(s, new HashSet<string>());
             }
-
         }
 
         /// <summary>
