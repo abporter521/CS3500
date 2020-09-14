@@ -16,6 +16,9 @@
 //  (Version 1.2) Changed the definition of equality with regards
 //                to numeric tokens
 
+// Andrew Porter, u1071655 14 Sept 2020
+
+
 
 using System;
 using System.Collections.Generic;
@@ -45,6 +48,10 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class Formula
     {
+        private string formulaString;
+        private Func<string, string> normalizer;
+        private string[] formTokens;
+
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically invalid,
@@ -82,6 +89,39 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            double i;
+            int closeParen = 0;
+            int openParen = 0;
+
+            //Check to make sure formula is not empty
+            if (GetTokens(formula).Count() == 0)
+                throw new FormulaFormatException("Please enter a non-empty formula.");
+
+            //Checks that all tokens are of valid format
+            foreach (string token in GetTokens(formula))
+            {
+                if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
+                {
+                    if (token == "(")
+                        openParen++;
+                    if (token == ")")
+                        closeParen++;
+                    continue;
+                }
+                else if (double.TryParse(token, out i))
+                    continue;
+                else if (!isValid(normalize(token)))
+                    throw new FormulaFormatException("There is an invalid variable or character in the formula.\n Make sure variables are of valid format.");
+            }
+
+            //Checks that there are no unmatched parentheses
+            if (openParen != closeParen)
+                throw new FormulaFormatException("There are unmatched parentheses.\n Please double check your formula.");
+
+            //Set our class variables
+            formulaString = formula;
+            normalizer = normalize;
+
         }
 
         /// <summary>
