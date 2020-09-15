@@ -94,6 +94,7 @@ namespace SpreadsheetUtilities
             double i;
             int closeParen = 0;
             int openParen = 0;
+            string beforeToken = "";
 
             //Check to make sure formula is not empty
             if (GetTokens(formula).Count() == 0)
@@ -102,16 +103,28 @@ namespace SpreadsheetUtilities
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
+                if (placeHolder > 0)
+                    beforeToken = tokens[placeHolder - 1];
+
                 if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
                 {
-                    //Checks that first token is not an operator
+                    double old;
+                    //Checks Starting Token Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && placeHolder == 0)
                         throw new FormulaFormatException("Formula must begin with a valid variable, number, or ( .");
-                    //Checks that the last token is not an operator
+                    //Checks Ending Token Rule
                     if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length)
                         throw new FormulaFormatException("Formula must end with a valid variable, number, or ) .");
+                    //Checks Parenthesis/Operator Following Rule
+                    if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && tokens[placeHolder - 1] == "(")
+                        throw new FormulaFormatException("Formula cannot have operator immediately following ( .");
+                    //Checks Extra Following Rule
                     if (token == "(")
+                    {
+                        if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                            throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         openParen++;
+                    }
                     if (token == ")")
                         closeParen++;
                     tokens[placeHolder] = token;
@@ -120,12 +133,20 @@ namespace SpreadsheetUtilities
                 }
                 else if (double.TryParse(token, out i))
                 {
+                    double old;
+                    //Checks Extra Following Rule
+                    if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                        throw new FormulaFormatException("Implicit multiplication is not allowed.");
                     tokens[placeHolder] = token;
                     placeHolder++;
                     continue;
                 }
                 else if (isValid(token))
                 {
+                    double old;
+                    //Checks Extra Following Rule
+                    if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                        throw new FormulaFormatException("Implicit multiplication is not allowed.");
                     tokens[placeHolder] = token;
                     placeHolder++;
                 }
