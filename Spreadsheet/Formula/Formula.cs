@@ -119,15 +119,15 @@ namespace SpreadsheetUtilities
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && placeHolder == 0)
                         throw new FormulaFormatException("Formula must begin with a valid variable, number, or ( .");
                     //Checks Ending Token Rule
-                    if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length)
+                    if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length-1)
                         throw new FormulaFormatException("Formula must end with a valid variable, number, or ) .");
                     //Checks Parenthesis/Operator Following Rule
-                    if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && tokens[placeHolder - 1] == "(")
+                    if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && beforeToken == "(")
                         throw new FormulaFormatException("Formula cannot have operator immediately following ( .");
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
-                        if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
+                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         openParen++;
                     }
@@ -140,20 +140,20 @@ namespace SpreadsheetUtilities
                 else if (double.TryParse(token, out i))
                 {                   
                     //Checks Extra Following Rule
-                    if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
+                    if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
                         throw new FormulaFormatException("Implicit multiplication is not allowed.");
                     tokens[placeHolder] = token;
                     placeHolder++;
                     continue;
                 }
-                if (varPattern.IsMatch(token))
+                if (varPattern.IsMatch(normalize(token)))
                 {
-                    if (isValid(token))
+                    if (isValid(normalize(token)))
                     {                       
                         //Checks Extra Following Rule
-                        if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
+                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
-                        tokens[placeHolder] = token;
+                        tokens[placeHolder] = normalize(token);
                         placeHolder++;
                     }
                 }
@@ -163,7 +163,7 @@ namespace SpreadsheetUtilities
 
             //Checks that there are no unmatched parentheses
             if (openParen != closeParen)
-                throw new FormulaFormatException("There are unmatched parentheses.\n Please double check your formula.");
+                throw new FormulaFormatException("There are unmatched parentheses.\nPlease double check your formula.");
 
             //Set our class variables
             formulaString = formula;
@@ -404,6 +404,19 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
+            Regex varPattern = new Regex(basicVarPattern);
+            HashSet<string> variablesInFormula = new HashSet<string>();
+            foreach (string varTok in tokens)
+            {
+                if (varPattern.IsMatch(varTok) && validator(varTok))
+                {
+                    if (variablesInFormula.Contains(normalizer(varTok)))
+                        continue;
+                    else
+                        variablesInFormula.Add(normalizer(varTok));
+                }
+            }
+            
             return null;
         }
 
