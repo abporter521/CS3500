@@ -50,7 +50,8 @@ namespace SpreadsheetUtilities
     {
         private string formulaString;
         private Func<string, string> normalizer;
-        private string[] formTokens;
+        private Func<string, bool> validator;
+        private string[] tokens;
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
@@ -89,6 +90,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            int placeHolder = 0;
             double i;
             int closeParen = 0;
             int openParen = 0;
@@ -96,21 +98,38 @@ namespace SpreadsheetUtilities
             //Check to make sure formula is not empty
             if (GetTokens(formula).Count() == 0)
                 throw new FormulaFormatException("Please enter a non-empty formula.");
-
+            tokens = new string[GetTokens(formula).Count()];
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
                 if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
                 {
+                    //Checks that first token is not an operator
+                    if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && placeHolder == 0)
+                        throw new FormulaFormatException("Formula must begin with a valid variable, number, or ( .");
+                    //Checks that the last token is not an operator
+                    if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length)
+                        throw new FormulaFormatException("Formula must end with a valid variable, number, or ) .");
                     if (token == "(")
                         openParen++;
                     if (token == ")")
                         closeParen++;
+                    tokens[placeHolder] = token;
+                    placeHolder++;
                     continue;
                 }
                 else if (double.TryParse(token, out i))
+                {
+                    tokens[placeHolder] = token;
+                    placeHolder++;
                     continue;
-                else if (!isValid(normalize(token)))
+                }
+                else if (isValid(token))
+                {
+                    tokens[placeHolder] = token;
+                    placeHolder++;
+                }
+                else
                     throw new FormulaFormatException("There is an invalid variable or character in the formula.\n Make sure variables are of valid format.");
             }
 
@@ -121,6 +140,7 @@ namespace SpreadsheetUtilities
             //Set our class variables
             formulaString = formula;
             normalizer = normalize;
+            validator = isValid;
 
         }
 
@@ -147,7 +167,201 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
+            bool OpEmpty = true;
+            Stack<string> operators = new Stack<string>();
+            Stack<double> values = new Stack<double>();
+            foreach (string tok in tokens)
+            {
+                double i = 0;
+
+                //If token is an integer, check for the next operator. If *, or / perform
+                // the operation, otherwise push the integer
+                if (double.TryParse(tok, out i) && !OpEmpty)
+                {
+                    switch (operators.Peek())
+                    {
+                        case "*":
+                            values.Push(values.Pop() * i);
+                            operators.Pop();
+                            if (operators.Count == 0)
+                                OpEmpty = true;
+                            break;
+                        case "/":
+                            if (i == 0)
+                                return new FormulaError("Cannot divide by 0");
+                            values.Push(values.Pop() / i);
+                            operators.Pop();
+                            break;
+                        default:
+                            values.Push(i);
+                            break;
+                    }
+                }
+
+                //if the first token of the whole expression is an integer, push onto value stack
+                else if (double.TryParse(tok, out i) && OpEmpty)
+                    values.Push(i);
+
+                // if token is * or /, push onto operator stack
+                else if (tok == "*" || tok == "/")
+                {
+                    operators.Push(tok);
+                    OpEmpty = false;
+                }
+
+                //if token is a variable, lookup variable value and perform same algorithm
+                //as the integer section
+                else if (validator(normalizer(tok)))
+                {
+                    i = lookup(normalizer(tok));
+                    if (OpEmpty)
+                    {
+                        values.Push(i);
+                        continue;
+                    }
+                    switch (operators.Peek())
+                    {
+                        case "*":
+                            values.Push(values.Pop() * i);
+                            operators.Pop();
+                            if (operators.Count == 0)
+                                OpEmpty = true;
+                            break;
+                        case "/":
+                            if (i == 0)
+                                return new FormulaError("Cannot divide by 0");
+                            values.Push(values.Pop() / i);
+                            operators.Pop();
+                            break;
+                        default:
+                            values.Push(i);
+                            break;
+                    }
+                }
+
+                //if token is + or -, check if previous operator on stack is also + or -.
+                //If so, perform the operation otherwise and add operator to stack, 
+                //otherwise just add operator to stack
+                else if (tok == "+" || tok == "-")
+                {
+                    if (!OpEmpty)
+                    {
+                        switch (operators.Peek())
+                        {
+                            case "+":
+                                i = values.Pop() + values.Pop();
+                                operators.Pop();
+                                values.Push(i);
+                                operators.Push(tok);
+                                break;
+                            case "-":
+                                double subtractor = values.Pop();
+                                i = values.Pop() - subtractor;
+                                operators.Pop();
+                                values.Push(i);
+                                operators.Push(tok);
+                                break;
+                            default:
+                                operators.Push(tok);
+                                OpEmpty = false;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        operators.Push(tok);
+                        OpEmpty = false;
+                    }
+                }
+
+                //if token is (, push to operator stack
+                else if (tok == "(")
+                {
+                    operators.Push(tok);
+                    OpEmpty = false;
+                }
+
+                //if token is ), check if addition or subtraction was performed and perform it if possible
+                //then check for multiplication or division.  If ( is found then pop
+                else if (tok == ")")
+                {
+                    switch (operators.Peek())
+                    {
+                        case "+":
+                            i = values.Pop() + values.Pop();
+                            operators.Pop();
+                            values.Push(i);
+                            if (operators.Peek() == "(")
+                            {
+                                operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                            }
+                            break;
+
+                        case "-":
+                            double subtraction = values.Pop();
+                            i = values.Pop() - subtraction;
+                            operators.Pop();
+                            values.Push(i);
+                            if (operators.Peek() == "(")
+                            {
+                                operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                            }
+                            break;
+
+                        case "(":
+                            operators.Pop();
+                            if (operators.Count == 0)
+                                OpEmpty = true;
+                            break;
+                    }
+                    if (!OpEmpty)
+                    {
+                        switch (operators.Peek())
+                        {
+                            case "*":
+                                i = values.Pop() * values.Pop();
+                                operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                                values.Push(i);
+                                break;
+                            case "/":
+                                double divisor = values.Pop();
+                                if (divisor == 0)
+                                    return new FormulaError("Division by 0 occurs");
+                                i = values.Pop() / divisor;
+                                operators.Pop();
+                                if (operators.Count == 0)
+                                    OpEmpty = true;
+                                values.Push(i);
+                                break;
+                        }
+                    }
+                }
+
+                else if (!validator(normalizer(tok)))
+                    return new FormulaError("The normalized variable is unknown");
+            }
+            //Pop stacks and return value. Value in operator stack should be + or -
+            if (operators.Count == 1)
+            {
+                if (values.Count == 2)
+                {
+                    if (operators.Peek() == "+")
+                        return values.Pop() + values.Pop();
+                    else if (operators.Peek() == "-")
+                    {
+                        double subtractor = values.Pop();
+                        return values.Pop() - subtractor;
+                    }
+                }
+            }
+            //Returns the value when there is only 1 value left in the value stack
+            return values.Pop();
         }
 
         /// <summary>
