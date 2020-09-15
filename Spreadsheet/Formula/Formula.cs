@@ -52,6 +52,7 @@ namespace SpreadsheetUtilities
         private Func<string, string> normalizer;
         private Func<string, bool> validator;
         private string[] tokens;
+        private string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
@@ -94,8 +95,7 @@ namespace SpreadsheetUtilities
             double i;
             int closeParen = 0;
             int openParen = 0;
-            string beforeToken = "";
-            string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
+            string beforeToken = "";           
             Regex varPattern = new Regex(basicVarPattern);
 
             //Check to make sure formula is not empty
@@ -105,12 +105,16 @@ namespace SpreadsheetUtilities
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
+                bool isDouble = false;
+
                 if (placeHolder > 0)
                     beforeToken = tokens[placeHolder - 1];
+                double old;
+                if (double.TryParse(beforeToken, out old))
+                    isDouble = true;
 
                 if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
                 {
-                    double old;
                     //Checks Starting Token Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && placeHolder == 0)
                         throw new FormulaFormatException("Formula must begin with a valid variable, number, or ( .");
@@ -123,7 +127,7 @@ namespace SpreadsheetUtilities
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
-                        if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                        if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         openParen++;
                     }
@@ -134,10 +138,9 @@ namespace SpreadsheetUtilities
                     continue;
                 }
                 else if (double.TryParse(token, out i))
-                {
-                    double old;
+                {                   
                     //Checks Extra Following Rule
-                    if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                    if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
                         throw new FormulaFormatException("Implicit multiplication is not allowed.");
                     tokens[placeHolder] = token;
                     placeHolder++;
@@ -146,10 +149,9 @@ namespace SpreadsheetUtilities
                 if (varPattern.IsMatch(token))
                 {
                     if (isValid(token))
-                    {
-                        double old;
+                    {                       
                         //Checks Extra Following Rule
-                        if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                        if (beforeToken == ")" || isValid(beforeToken) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         tokens[placeHolder] = token;
                         placeHolder++;
@@ -233,36 +235,6 @@ namespace SpreadsheetUtilities
                 {
                     operators.Push(tok);
                     OpEmpty = false;
-                }
-
-                //if token is a variable, lookup variable value and perform same algorithm
-                //as the integer section
-                else if (validator(normalizer(tok)))
-                {
-                    i = lookup(normalizer(tok));
-                    if (OpEmpty)
-                    {
-                        values.Push(i);
-                        continue;
-                    }
-                    switch (operators.Peek())
-                    {
-                        case "*":
-                            values.Push(values.Pop() * i);
-                            operators.Pop();
-                            if (operators.Count == 0)
-                                OpEmpty = true;
-                            break;
-                        case "/":
-                            if (i == 0)
-                                return new FormulaError("Cannot divide by 0");
-                            values.Push(values.Pop() / i);
-                            operators.Pop();
-                            break;
-                        default:
-                            values.Push(i);
-                            break;
-                    }
                 }
 
                 //if token is + or -, check if previous operator on stack is also + or -.
@@ -368,7 +340,36 @@ namespace SpreadsheetUtilities
                         }
                     }
                 }
-
+               
+                //if token is a variable, lookup variable value and perform same algorithm
+                //as the integer section
+                else if (validator(normalizer(tok)))
+                {
+                    i = lookup(normalizer(tok));
+                    if (OpEmpty)
+                    {
+                        values.Push(i);
+                        continue;
+                    }
+                    switch (operators.Peek())
+                    {
+                        case "*":
+                            values.Push(values.Pop() * i);
+                            operators.Pop();
+                            if (operators.Count == 0)
+                                OpEmpty = true;
+                            break;
+                        case "/":
+                            if (i == 0)
+                                return new FormulaError("Cannot divide by 0");
+                            values.Push(values.Pop() / i);
+                            operators.Pop();
+                            break;
+                        default:
+                            values.Push(i);
+                            break;
+                    }
+                }
                 else if (!validator(normalizer(tok)))
                     return new FormulaError("The normalized variable is unknown");
             }
