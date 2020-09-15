@@ -405,5 +405,13 @@ namespace DevelopmentTests
             t.RemoveDependency("a", "b");
             Assert.AreEqual(1, t.Size);
         }
+        [TestMethod()]
+        public void DoubleTest()
+        {
+            string doubl = "3e5";
+            Assert.IsTrue(double.TryParse(doubl, out double hi));
+        }
+
     }
+
 }
