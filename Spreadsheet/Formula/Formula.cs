@@ -95,6 +95,8 @@ namespace SpreadsheetUtilities
             int closeParen = 0;
             int openParen = 0;
             string beforeToken = "";
+            string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
+            Regex varPattern = new Regex(basicVarPattern);
 
             //Check to make sure formula is not empty
             if (GetTokens(formula).Count() == 0)
@@ -141,14 +143,17 @@ namespace SpreadsheetUtilities
                     placeHolder++;
                     continue;
                 }
-                else if (isValid(token))
+                if (varPattern.IsMatch(token))
                 {
-                    double old;
-                    //Checks Extra Following Rule
-                    if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
-                        throw new FormulaFormatException("Implicit multiplication is not allowed.");
-                    tokens[placeHolder] = token;
-                    placeHolder++;
+                    if (isValid(token))
+                    {
+                        double old;
+                        //Checks Extra Following Rule
+                        if (beforeToken == ")" || isValid(beforeToken) || double.TryParse(beforeToken, out old))
+                            throw new FormulaFormatException("Implicit multiplication is not allowed.");
+                        tokens[placeHolder] = token;
+                        placeHolder++;
+                    }
                 }
                 else
                     throw new FormulaFormatException("There is an invalid variable or character in the formula.\n Make sure variables are of valid format.");
