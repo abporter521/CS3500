@@ -151,7 +151,7 @@ namespace SpreadsheetUtilities
                     if (isValid(token))
                     {                       
                         //Checks Extra Following Rule
-                        if (beforeToken == ")" || isValid(beforeToken) || isDouble)
+                        if (beforeToken == ")" || varPattern.IsMatch(beforeToken) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         tokens[placeHolder] = token;
                         placeHolder++;
