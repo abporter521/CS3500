@@ -60,7 +60,7 @@ namespace FormulaEvaluator
                                 break;
                             case "/":
                                 if (i == 0)
-                                    throw new DivideByZeroException("Cannot divide by 0");
+                                    throw new ArgumentException("Cannot divide by 0");
                                 values.Push(values.Pop() / i);
                                 operators.Pop();
                                 break;
@@ -101,7 +101,7 @@ namespace FormulaEvaluator
                                 break;
                             case "/":
                                 if (i == 0)
-                                    throw new DivideByZeroException("Cannot divide by 0");
+                                    throw new ArgumentException("Cannot divide by 0");
                                 values.Push(values.Pop() / i);
                                 operators.Pop();
                                 break;
@@ -204,7 +204,7 @@ namespace FormulaEvaluator
                                 case "/":
                                     int divisor = values.Pop();
                                     if (divisor == 0)
-                                        throw new DivideByZeroException("Cannot divide by 0");
+                                        throw new ArgumentException("Cannot divide by 0");
                                     i = values.Pop() / divisor;
                                     operators.Pop();
                                     if (operators.Count == 0)
