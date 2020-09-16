@@ -95,11 +95,11 @@ namespace SpreadsheetUtilities
             double i;
             int closeParen = 0;
             int openParen = 0;
-            string beforeToken = "";           
+            string beforeToken = "";
             Regex varPattern = new Regex(basicVarPattern);
 
             //Check to make sure formula is not empty
-            if (GetTokens(formula).Count() == 0)
+            if (GetTokens(formula).Count() == 0 || formula == null)
                 throw new FormulaFormatException("Please enter a non-empty formula.");
             tokens = new string[GetTokens(formula).Count()];
             //Checks that all tokens are of valid format
@@ -119,7 +119,7 @@ namespace SpreadsheetUtilities
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && placeHolder == 0)
                         throw new FormulaFormatException("Formula must begin with a valid variable, number, or ( .");
                     //Checks Ending Token Rule
-                    if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length-1)
+                    if ((token == "+" || token == "-" || token == "(" || token == "*" || token == "/") && placeHolder == tokens.Length - 1)
                         throw new FormulaFormatException("Formula must end with a valid variable, number, or ) .");
                     //Checks Parenthesis/Operator Following Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && beforeToken == "(")
@@ -138,7 +138,7 @@ namespace SpreadsheetUtilities
                     continue;
                 }
                 else if (double.TryParse(token, out i))
-                {                   
+                {
                     //Checks Extra Following Rule
                     if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
                         throw new FormulaFormatException("Implicit multiplication is not allowed.");
@@ -149,7 +149,7 @@ namespace SpreadsheetUtilities
                 if (varPattern.IsMatch(normalize(token)))
                 {
                     if (isValid(normalize(token)))
-                    {                       
+                    {
                         //Checks Extra Following Rule
                         if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
@@ -340,7 +340,7 @@ namespace SpreadsheetUtilities
                         }
                     }
                 }
-               
+
                 //if token is a variable, lookup variable value and perform same algorithm
                 //as the integer section
                 else if (validator(normalizer(tok)))
@@ -408,6 +408,7 @@ namespace SpreadsheetUtilities
             HashSet<string> variablesInFormula = new HashSet<string>();
             foreach (string varTok in tokens)
             {
+                //check if variable matches specification
                 if (varPattern.IsMatch(varTok) && validator(varTok))
                 {
                     if (variablesInFormula.Contains(normalizer(varTok)))
@@ -416,8 +417,8 @@ namespace SpreadsheetUtilities
                         variablesInFormula.Add(normalizer(varTok));
                 }
             }
-            
-            return null;
+
+            return variablesInFormula;
         }
 
         /// <summary>
@@ -432,7 +433,12 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override string ToString()
         {
-            return null;
+            StringBuilder formula = new StringBuilder();
+            foreach (string formulaPieces in tokens)
+            {
+                formula.Append(formulaPieces);
+            }
+            return formula.ToString();
         }
 
         /// <summary>
@@ -456,8 +462,42 @@ namespace SpreadsheetUtilities
         /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
         /// </summary>
         public override bool Equals(object obj)
-        {
-            return false;
+        {           
+            if (!(obj is Formula) || obj == null)
+                return false;
+            
+            Formula f = (Formula)obj;           
+            if (f.TokensArray.Length != this.TokensArray.Length)
+                return false;
+            int i = 0;
+            double resultObj;
+            double resultThis;
+            foreach (string item in f.TokensArray)
+            {
+                //Checks for sameness in doubles
+                if(Double.TryParse(item, out resultObj))
+                {
+                    //if this does not have a double, but f does, return false
+                    if (!Double.TryParse(tokens[i], out resultThis))
+                        return false;
+                    else
+                    {
+                        //If doubles are equal, do nothing. Else return false
+                        if (resultObj.ToString().Equals(resultThis.ToString()))
+                        {
+                            i++;
+                            continue;
+                        }
+                        else
+                            return false;
+                    }
+                }
+                if (this.TokensArray[i] != f.TokensArray[i])
+                    return false;
+                i++;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -519,6 +559,13 @@ namespace SpreadsheetUtilities
                 }
             }
 
+        }
+        /// <summary>
+        /// Private helper to get tokens array.
+        /// </summary>
+        public string[] TokensArray 
+        {
+            get { return tokens; }
         }
     }
 
