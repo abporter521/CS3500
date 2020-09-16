@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SpreadsheetUtilities;
+using System.Text;
 
 namespace FormulaTests
 {
@@ -120,12 +121,52 @@ namespace FormulaTests
             Formula f = new Formula("14*(3 + 7) -");
         }
 
+        [TestMethod]
+        public void ToStringTest()
+        {
+            Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(A12A*3)) + B24 - 2 * (_B32) + 5", SimpleNormalizer, s=> true);        
+            Assert.AreEqual("(3.25+((28.25+32)-4*___1)/(a12a*3))+b24-2*(_b32)+5", f.ToString());
+        }
         [TestMethod]   
         public void EvaluateStressTest()
         {
             Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(A12A*3)) + B24 - 2 * (_B32) + 5");
             double x = (double) f.Evaluate(IntermedLookup);
             Assert.AreEqual(16.25, x);
+
+        }
+
+        [TestMethod]
+        public void EvaluateFormulaErrorTestDivideBy0()
+        {
+            Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(_B32*3)) + B24 - 2 * (A12A) + 5");
+            Assert.IsTrue(f.Evaluate(IntermedLookup) is FormulaError);
+
+        }
+
+        [TestMethod]
+        public void AreEqualWithDoublesDifferentLengths()
+        {
+            Formula f = new Formula("17.00 + 4/2 + A23");
+            Formula e = new Formula("17 + 4.0/2.00 + A23");
+            Assert.IsTrue(f.Equals(e));
+
+        }
+
+        [TestMethod]
+        public void NotEqualWithDoublesDifferentPlaces()
+        {
+            Formula f = new Formula("17.00 + 4/2 + A23");
+            Formula e = new Formula("4.0/2.00  + 17 + A23");
+            Assert.IsFalse(f.Equals(e));
+
+        }
+
+        [TestMethod]
+        public void NotEqualWithNull()
+        {
+            Formula f = new Formula("17.00 + 4/2 + A23");
+            Assert.IsFalse(f.Equals(null));
 
         }
         /// <summary>
@@ -153,5 +194,18 @@ namespace FormulaTests
             }
 
         }
+        public string SimpleNormalizer(string s)
+        {
+            StringBuilder variable = new StringBuilder();
+            foreach (char c in s)
+            {
+                if (Char.IsLetter(c))
+                    variable.Append(Char.ToLower(c));
+                else
+                    variable.Append(c);
+            }
+            return variable.ToString();
+        }
+
     }
 }
