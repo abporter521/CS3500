@@ -504,9 +504,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            if (f1 == null && f2 == null)
+            if (ReferenceEquals(f1, null) && ReferenceEquals(f2, null))
                 return true;
-            if (f1 == null && f2 != null)
+            if (ReferenceEquals(f1, null))
                 return false;
             return f1.Equals(f2);
         }
@@ -518,9 +518,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            if (f1 == null && f2 == null)
+            if (ReferenceEquals(f1, null) && ReferenceEquals(f2, null))
                 return false;
-            if (f1 == null && f2 != null)
+            if (ReferenceEquals(f1, null))
                 return true;
             return !(f1.Equals(f2));
         }
@@ -533,14 +533,14 @@ namespace SpreadsheetUtilities
         public override int GetHashCode()
         {
             double helperD;
-            int hashCode = 0;
+            int  hashCode = 0;
             foreach (string item in this.TokensArray)
             {
                 //Checks for sameness in doubles
                 if (Double.TryParse(item, out helperD))
                 {
                     string convertedD = helperD.ToString();
-                    hashCode += convertedD.GetHashCode();
+                    hashCode *= (convertedD.GetHashCode()/2);
                 }
                 else
                     hashCode += item.GetHashCode();
