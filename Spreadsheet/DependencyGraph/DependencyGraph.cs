@@ -74,8 +74,12 @@ namespace SpreadsheetUtilities
         /// It should return the size of dependees("a")
         /// </summary>
         public int this[string s]
-        {
-            get { return dependees[s].Count(); }
+        {               
+            get {            
+                if (dependees.ContainsKey(s)) 
+                    return dependees[s].Count();
+                return 0; 
+            }
         }
 
         /// <summary>
@@ -172,6 +176,8 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t) //Test if s doesnt exist
         {
+            if (!dependents.ContainsKey(s))
+                return;
             //If s exists in the graph, it will remove its
             //dependent and s will be taken off t's dependee list
             if (dependents[s].Contains(t))
