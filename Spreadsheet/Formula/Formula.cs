@@ -105,13 +105,13 @@ namespace SpreadsheetUtilities
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
-                bool isDouble = false;
+                bool beforeIsDouble = false;
 
                 if (placeHolder > 0)
                     beforeToken = tokens[placeHolder - 1];
                 double old;
                 if (double.TryParse(beforeToken, out old))
-                    isDouble = true;
+                    beforeIsDouble = true;
 
                 if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
                 {
@@ -127,7 +127,7 @@ namespace SpreadsheetUtilities
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
-                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
+                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         openParen++;
                     }
@@ -140,7 +140,7 @@ namespace SpreadsheetUtilities
                 else if (double.TryParse(token, out i))
                 {
                     //Checks Extra Following Rule
-                    if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
+                    if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                         throw new FormulaFormatException("Implicit multiplication is not allowed.");
                     tokens[placeHolder] = token;
                     placeHolder++;
@@ -151,7 +151,7 @@ namespace SpreadsheetUtilities
                     if (isValid(normalize(token)))
                     {
                         //Checks Extra Following Rule
-                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || isDouble)
+                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         tokens[placeHolder] = normalize(token);
                         placeHolder++;
@@ -374,17 +374,14 @@ namespace SpreadsheetUtilities
                     return new FormulaError("The normalized variable is unknown");
             }
             //Pop stacks and return value. Value in operator stack should be + or -
-            if (operators.Count == 1)
+            if (operators.Count == 1 && values.Count == 2)
             {
-                if (values.Count == 2)
+                if (operators.Peek() == "+")
+                    return values.Pop() + values.Pop();
+                else if (operators.Peek() == "-")
                 {
-                    if (operators.Peek() == "+")
-                        return values.Pop() + values.Pop();
-                    else if (operators.Peek() == "-")
-                    {
-                        double subtractor = values.Pop();
-                        return values.Pop() - subtractor;
-                    }
+                    double subtractor = values.Pop();
+                    return values.Pop() - subtractor;
                 }
             }
             //Returns the value when there is only 1 value left in the value stack
@@ -417,7 +414,6 @@ namespace SpreadsheetUtilities
                         variablesInFormula.Add(normalizer(varTok));
                 }
             }
-
             return variablesInFormula;
         }
 
@@ -462,11 +458,12 @@ namespace SpreadsheetUtilities
         /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
         /// </summary>
         public override bool Equals(object obj)
-        {           
+        {
             if (!(obj is Formula) || obj == null)
                 return false;
-            
-            Formula f = (Formula)obj;           
+
+            Formula f = (Formula)obj;
+            //If the size of their arrays are not the same length, they cannot be equal.
             if (f.TokensArray.Length != this.TokensArray.Length)
                 return false;
             int i = 0;
@@ -475,7 +472,7 @@ namespace SpreadsheetUtilities
             foreach (string item in f.TokensArray)
             {
                 //Checks for sameness in doubles
-                if(Double.TryParse(item, out resultObj))
+                if (Double.TryParse(item, out resultObj))
                 {
                     //if this does not have a double, but f does, return false
                     if (!Double.TryParse(tokens[i], out resultThis))
@@ -496,7 +493,7 @@ namespace SpreadsheetUtilities
                     return false;
                 i++;
             }
-
+            //Return true if after cycling through every token, no inequality was flagged
             return true;
         }
 
@@ -507,7 +504,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            return false;
+            if (f1 == null && f2 == null)
+                return true;
+            if (f1 == null && f2 != null)
+                return false;
+            return f1.Equals(f2);
         }
 
         /// <summary>
@@ -517,7 +518,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            return false;
+            if (f1 == null && f2 == null)
+                return false;
+            if (f1 == null && f2 != null)
+                return true;
+            return !(f1.Equals(f2));
         }
 
         /// <summary>
@@ -527,7 +532,20 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()
         {
-            return 0;
+            double helperD;
+            int hashCode = 0;
+            foreach (string item in this.TokensArray)
+            {
+                //Checks for sameness in doubles
+                if (Double.TryParse(item, out helperD))
+                {
+                    string convertedD = helperD.ToString();
+                    hashCode += convertedD.GetHashCode();
+                }
+                else
+                    hashCode += item.GetHashCode();
+            }
+            return hashCode;
         }
 
         /// <summary>
@@ -561,9 +579,9 @@ namespace SpreadsheetUtilities
 
         }
         /// <summary>
-        /// Private helper to get tokens array.
+        /// Helper to get tokens array.
         /// </summary>
-        public string[] TokensArray 
+        public string[] TokensArray
         {
             get { return tokens; }
         }
