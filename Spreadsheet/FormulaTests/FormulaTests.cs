@@ -2,6 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using SpreadsheetUtilities;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FormulaTests
 {
@@ -121,6 +123,26 @@ namespace FormulaTests
             Formula f = new Formula("14*(3 + 7) -");
         }
 
+
+        [TestMethod]       
+        public void BasicEqualsTestDifferentFormulae()
+        {
+            Formula f = new Formula("14*(3 + 7)");
+            Formula e = new Formula("10*(3+7)");
+            Assert.IsTrue(f != e);
+            Formula x = new Formula("A6*(3+7)");
+            Formula y = new Formula("14/(3 + 7)");
+            Assert.IsFalse(x.Equals(f));
+            Assert.IsTrue(y != f);
+            Formula a = new Formula("(A5 + 17) -4*2");
+            Formula b = new Formula("(A5+17)-4*   2");
+            Assert.IsTrue(a == b);
+            Assert.IsTrue(a.Equals(b));
+            Assert.IsFalse(f.Equals(a));
+            Assert.IsFalse(f == null);
+            Assert.IsTrue(e != null);
+            Assert.IsTrue(null != b);
+        }
         [TestMethod]
         public void ToStringTest()
         {
@@ -147,10 +169,27 @@ namespace FormulaTests
         [TestMethod]
         public void AreEqualWithDoublesDifferentLengths()
         {
-            Formula f = new Formula("17.00 + 4/2 + A23");
+            Formula f = new Formula("17.000000000000001 + 4/2 + A23");
             Formula e = new Formula("17 + 4.0/2.00 + A23");
             Assert.IsTrue(f.Equals(e));
 
+        }
+
+        [TestMethod]
+        public void HashCodeEqualWithDoublesDifferentLengths()
+        {
+            Formula f = new Formula("17.000000000000001 + 4/2 + A23");
+            Formula e = new Formula("17 + 4.0/2.00 + A23");
+            Assert.IsTrue(f.GetHashCode() == e.GetHashCode());
+
+        }
+
+        [TestMethod]
+        public void HashCodeNotEqualWithVariables()
+        {
+            Formula f = new Formula("17.000000000000001 + 4/2 + A23");
+            Formula e = new Formula("17 + A23 + 4.0/2.00 ");
+            Assert.IsFalse(f.GetHashCode() == e.GetHashCode());
         }
 
         [TestMethod]
@@ -169,6 +208,174 @@ namespace FormulaTests
             Assert.IsFalse(f.Equals(null));
 
         }
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void MethodCallWillEmptyArguement()
+        {
+            Formula f = new Formula(" ");
+            f.GetHashCode();
+
+        }
+
+        [TestMethod]
+        public void GetVariablesTest()
+        {
+            Formula f = new Formula("A6+39/13 -(3-5)*_y +(Q_11-5)");
+            Assert.AreEqual(3, f.GetVariables().Count());
+        }
+
+        [TestMethod]
+        public void GetVariablesTestSameVariable()
+        {
+            Formula f = new Formula("A6+A6/13 -(3-5)*_y +(Q_11-5)");
+            Assert.AreEqual(3, f.GetVariables().Count());
+        }
+
+        /// <summary>
+        /// I am using tests from PS1 Grading Tests
+        /// </summary>
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("1")]
+        public void TestSingleNumber()
+        {
+            Assert.AreEqual(5, (double) new Formula("5").Evaluate(IntermedLookup),1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("2")]
+        public void TestSingleVariable()
+        {
+            Assert.AreEqual(0.5, new Formula("X5").Evaluate(IntermedLookup));
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("4")]
+        public void TestSubtraction()
+        {
+            Assert.AreEqual(8.384, new Formula("10.384-2").Evaluate(IntermedLookup));
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("5")]
+        public void TestMultiplication()
+        {
+            Assert.AreEqual(8.2, new Formula("2*4.1").Evaluate(IntermedLookup));
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("6")]
+        public void TestDivision()
+        {
+            Formula f = new Formula("16/2");
+            Assert.AreEqual(8.0, (double) f.Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("7")]
+        public void TestArithmeticWithVariable()
+        {
+            Assert.AreEqual(6, (double) new Formula("2+Abba").Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("9")]
+        public void TestLeftToRight()
+        {
+            Assert.AreEqual(15.4, new Formula("2 * 6+3.4").Evaluate(IntermedLookup));
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("10")]
+        public void TestOrderOperations()
+        {
+            Assert.AreEqual(20, (double) new Formula("2 + 6*3").Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("11")]
+        public void TestParenthesesTimes()
+        {
+            Assert.AreEqual(24, (double) new Formula("(2+6)*3").Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("14")]
+        public void TestPlusComplex()
+        {
+            Assert.AreEqual(14, (double) new Formula("2+(3+5*9)/Abba").Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("15")]
+        public void TestOperatorAfterParens()
+        {
+            Formula f = new Formula("(1*1)-2/2");
+
+            Assert.AreEqual(0, (double)f.Evaluate(BasicLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("17")]
+        public void TestComplexAndParentheses()
+        {
+            Assert.AreEqual(194, (double) new Formula("2+3*5+(3+4*8)*5+2").Evaluate(IntermedLookup), 1e-9);
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("18")]
+        public void TestDivideByZero()
+        {
+            Formula f = new Formula("5/0");
+            Assert.IsInstanceOfType(f.Evaluate(BasicLookup), typeof(FormulaError));
+        }
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("18")]
+        public void TestDivideByVariableEqualTo0()
+        {
+            Formula f = new Formula("5/_B32");
+            Assert.IsInstanceOfType(f.Evaluate(IntermedLookup), typeof(FormulaError));
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("19")]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestSingleOperator()
+        {
+            Formula f = new Formula("+");
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("20")]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestExtraOperator()
+        {
+            Formula f = new Formula("2+5+");
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("21")]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestExtraParentheses()
+        {
+            Formula f = new Formula("2+5*7)");
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("23")]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void TestPlusInvalidVariable()
+        {
+            Formula f = new Formula("5+%xx");
+        }
+
+        [TestMethod(), Timeout(5000)]
+        [TestCategory("28")]
+        public void TestComplexNestedParensLeft()
+        {
+            Formula f = new Formula("((((x1+x2)+x3)+x4)+x5)+x6");
+            Assert.AreEqual(30, (double) f.Evaluate(BasicLookup), 1e-9);
+        }
+
         /// <summary>
         /// This is a basic lookup method that only returns one value
         /// </summary>
@@ -183,6 +390,8 @@ namespace FormulaTests
         {
             switch (s)
             {
+                case "Abba":
+                    return 4;
                 case "A12A":
                     return 2.5;
                 case "_B32":
