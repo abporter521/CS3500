@@ -28,6 +28,7 @@ using System.Text.RegularExpressions;
 
 namespace SpreadsheetUtilities
 {
+
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  The allowed symbols are non-negative numbers written using double-precision 
@@ -137,6 +138,7 @@ namespace SpreadsheetUtilities
                     placeHolder++;
                     continue;
                 }
+                //If the token is a double
                 else if (double.TryParse(token, out i))
                 {
                     //Checks Extra Following Rule
@@ -146,8 +148,10 @@ namespace SpreadsheetUtilities
                     placeHolder++;
                     continue;
                 }
+                //If the token matches basic variable format when normalized
                 if (varPattern.IsMatch(normalize(token)))
                 {
+                    //Checks if normalized token meets specifications of user's validator
                     if (isValid(normalize(token)))
                     {
                         //Checks Extra Following Rule
@@ -195,7 +199,6 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            bool OpEmpty = true;
             Stack<string> operators = new Stack<string>();
             Stack<double> values = new Stack<double>();
             foreach (string tok in tokens)
@@ -204,15 +207,13 @@ namespace SpreadsheetUtilities
 
                 //If token is an integer, check for the next operator. If *, or / perform
                 // the operation, otherwise push the integer
-                if (double.TryParse(tok, out i) && !OpEmpty)
+                if (double.TryParse(tok, out i) && !(operators.Count == 0))
                 {
                     switch (operators.Peek())
                     {
                         case "*":
                             values.Push(values.Pop() * i);
                             operators.Pop();
-                            if (operators.Count == 0)
-                                OpEmpty = true;
                             break;
                         case "/":
                             if (i == 0)
@@ -227,23 +228,24 @@ namespace SpreadsheetUtilities
                 }
 
                 //if the first token of the whole expression is an integer, push onto value stack
-                else if (double.TryParse(tok, out i) && OpEmpty)
+                else if (double.TryParse(tok, out i) && (operators.Count == 0))
                     values.Push(i);
 
                 // if token is * or /, push onto operator stack
                 else if (tok == "*" || tok == "/")
-                {
                     operators.Push(tok);
-                    OpEmpty = false;
-                }
 
                 //if token is + or -, check if previous operator on stack is also + or -.
                 //If so, perform the operation otherwise and add operator to stack, 
                 //otherwise just add operator to stack
                 else if (tok == "+" || tok == "-")
                 {
-                    if (!OpEmpty)
+                    if (!(operators.Count == 0))
                     {
+                        //If there are +, - in the stack means there is 
+                        //a statement equivalent to a + b + c where the second +
+                        //is the tok. We want to add a + b before pushing second +
+                        //to the operator stack. Otherwise just push + to stack
                         switch (operators.Peek())
                         {
                             case "+":
@@ -261,40 +263,40 @@ namespace SpreadsheetUtilities
                                 break;
                             default:
                                 operators.Push(tok);
-                                OpEmpty = false;
                                 break;
                         }
                     }
                     else
-                    {
                         operators.Push(tok);
-                        OpEmpty = false;
-                    }
                 }
 
                 //if token is (, push to operator stack
                 else if (tok == "(")
-                {
                     operators.Push(tok);
-                    OpEmpty = false;
-                }
 
                 //if token is ), check if addition or subtraction was performed and perform it if possible
                 //then check for multiplication or division.  If ( is found then pop
                 else if (tok == ")")
                 {
+                    //Checks for statments to see if addition or 
+                    //subtraction occurs in parentheses of format (a + b)
+                    //If so, perform operation and push new value to stack
+                    //If opening parenthese is detected we assume no operators
+                    //are within the parenthese.
                     switch (operators.Peek())
                     {
+                        //This +, - section is different than the one above
+                        //because we also have to check for closure of the 
+                        //parenthetical expression. Creating a helper to do
+                        //the 2 instances of line 295 to 297 and line 303-306
+                        //would require passing in the 2 stacks.
+                        //Having it written this way is just as readable
                         case "+":
                             i = values.Pop() + values.Pop();
                             operators.Pop();
                             values.Push(i);
                             if (operators.Peek() == "(")
-                            {
                                 operators.Pop();
-                                if (operators.Count == 0)
-                                    OpEmpty = true;
-                            }
                             break;
 
                         case "-":
@@ -303,28 +305,24 @@ namespace SpreadsheetUtilities
                             operators.Pop();
                             values.Push(i);
                             if (operators.Peek() == "(")
-                            {
                                 operators.Pop();
-                                if (operators.Count == 0)
-                                    OpEmpty = true;
-                            }
                             break;
 
                         case "(":
                             operators.Pop();
-                            if (operators.Count == 0)
-                                OpEmpty = true;
                             break;
                     }
-                    if (!OpEmpty)
+                    //If the operator stack is not empty, we check for
+                    //multiplication or division that could be done alongside
+                    //the parentheses such as a *(b + c) or that is done inside
+                    //the parentheses such as (a*b)
+                    if (!(operators.Count == 0))
                     {
                         switch (operators.Peek())
                         {
                             case "*":
                                 i = values.Pop() * values.Pop();
                                 operators.Pop();
-                                if (operators.Count == 0)
-                                    OpEmpty = true;
                                 values.Push(i);
                                 break;
                             case "/":
@@ -333,8 +331,6 @@ namespace SpreadsheetUtilities
                                     return new FormulaError("Division by 0 occurs");
                                 i = values.Pop() / divisor;
                                 operators.Pop();
-                                if (operators.Count == 0)
-                                    OpEmpty = true;
                                 values.Push(i);
                                 break;
                         }
@@ -346,7 +342,7 @@ namespace SpreadsheetUtilities
                 else if (validator(normalizer(tok)))
                 {
                     i = lookup(normalizer(tok));
-                    if (OpEmpty)
+                    if (operators.Count == 0)
                     {
                         values.Push(i);
                         continue;
@@ -356,8 +352,6 @@ namespace SpreadsheetUtilities
                         case "*":
                             values.Push(values.Pop() * i);
                             operators.Pop();
-                            if (operators.Count == 0)
-                                OpEmpty = true;
                             break;
                         case "/":
                             if (i == 0)
@@ -370,6 +364,7 @@ namespace SpreadsheetUtilities
                             break;
                     }
                 }
+                //If the token variable is not a valid variable format after being normalized, exception is thrown
                 else if (!validator(normalizer(tok)))
                     return new FormulaError("The normalized variable is unknown");
             }
@@ -401,20 +396,21 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
+            HashSet<string> var = new HashSet<string>();
             Regex varPattern = new Regex(basicVarPattern);
-            HashSet<string> variablesInFormula = new HashSet<string>();
             foreach (string varTok in tokens)
             {
-                //check if variable matches specification
+                //Check if variable matches specification
                 if (varPattern.IsMatch(varTok) && validator(varTok))
                 {
-                    if (variablesInFormula.Contains(normalizer(varTok)))
+                    //Check if variable was already returned
+                    if (var.Contains(varTok))
                         continue;
-                    else
-                        variablesInFormula.Add(normalizer(varTok));
+
+                    yield return varTok;
+                    var.Add(varTok);
                 }
             }
-            return variablesInFormula;
         }
 
         /// <summary>
@@ -533,14 +529,14 @@ namespace SpreadsheetUtilities
         public override int GetHashCode()
         {
             double helperD;
-            int  hashCode = 0;
+            int hashCode = 0;
             foreach (string item in this.TokensArray)
             {
                 //Checks for sameness in doubles
                 if (Double.TryParse(item, out helperD))
                 {
                     string convertedD = helperD.ToString();
-                    hashCode *= (convertedD.GetHashCode()/2);
+                    hashCode *= (convertedD.GetHashCode() / 2);
                 }
                 else
                     hashCode += item.GetHashCode();
