@@ -131,7 +131,7 @@ namespace FormulaTests
         }
 
 
-        [TestMethod]       
+        [TestMethod]
         public void BasicEqualsTestDifferentFormulae()
         {
             Formula f = new Formula("14*(3 + 7)");
@@ -153,14 +153,14 @@ namespace FormulaTests
         [TestMethod]
         public void ToStringTest()
         {
-            Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(A12A*3)) + B24 - 2 * (_B32) + 5", SimpleNormalizer, s=> true);        
+            Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(A12A*3)) + B24 - 2 * (_B32) + 5", SimpleNormalizer, s => true);
             Assert.AreEqual("(3.25+((28.25+32)-4*___1)/(a12a*3))+b24-2*(_b32)+5", f.ToString());
         }
-        [TestMethod]   
+        [TestMethod]
         public void EvaluateStressTest()
         {
             Formula f = new Formula("(3.25+ ((28.25+32) - 4 * ___1) /(A12A*3)) + B24 - 2 * (_B32) + 5");
-            double x = (double) f.Evaluate(IntermedLookup);
+            double x = (double)f.Evaluate(IntermedLookup);
             Assert.AreEqual(16.25, x);
 
         }
@@ -228,14 +228,60 @@ namespace FormulaTests
         public void GetVariablesTest()
         {
             Formula f = new Formula("A6+39/13 -(3-5)*_y +(Q_11-5)");
-            Assert.AreEqual(3, f.GetVariables().Count());
+            IEnumerable<string> s = f.GetVariables();
+            foreach (string svar in s)
+            {
+                if (svar == "A6")
+                    Assert.IsTrue(true);
+                else if (svar == "_y")
+                    Assert.IsTrue(true);
+                else if (svar == "Q_11")
+                    Assert.IsTrue(true);
+            }
         }
-
+        /// <summary>
+        /// This is testing to see if getVariables returns the
+        /// same variable more than once because the variable appears
+        /// more than once in the formula.  Flags are created to detect this.
+        /// Code Coverage of this test is observed to make sure each Assert.IsTrue(true)
+        /// Code Coverage reveals that all variables were identified in the formula once
+        /// is touched on.
+        /// </summary>
         [TestMethod]
-        public void GetVariablesTestSameVariable()
+        public void GetVariablesTestSameVariables()
         {
-            Formula f = new Formula("A6+A6/13 -(3-5)*_y +(Q_11-5)");
-            Assert.AreEqual(3, f.GetVariables().Count());
+            Formula f = new Formula("A6+A6/13 -(3-5)*_y *a6 +_y +(Q_11-5)");
+            IEnumerable<string> s = f.GetVariables();
+            bool A6Seen = false;
+            bool _ySeen = false;
+
+            foreach (string svar in s)
+            {
+                if (svar == "A6")
+                {
+                    if (!A6Seen)
+                    {
+                        Assert.IsTrue(true);
+                        A6Seen = true;
+                    }
+                    else
+                        Assert.IsTrue(false);
+                }
+                else if (svar == "_y")
+                {
+                    if (!_ySeen)
+                    {
+                        Assert.IsTrue(true);
+                        _ySeen = true;
+                    }
+                    else
+                        Assert.IsTrue(false);
+                }
+                else if (svar == "Q_11")
+                    Assert.IsTrue(true);
+                else if (svar == "a6")
+                    Assert.IsTrue(true);
+            }
         }
 
         /// <summary>
@@ -245,7 +291,7 @@ namespace FormulaTests
         [TestCategory("1")]
         public void TestSingleNumber()
         {
-            Assert.AreEqual(5, (double) new Formula("5").Evaluate(IntermedLookup),1e-9);
+            Assert.AreEqual(5, (double)new Formula("5").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
@@ -274,14 +320,14 @@ namespace FormulaTests
         public void TestDivision()
         {
             Formula f = new Formula("16/2");
-            Assert.AreEqual(8.0, (double) f.Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(8.0, (double)f.Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
         [TestCategory("7")]
         public void TestArithmeticWithVariable()
         {
-            Assert.AreEqual(6, (double) new Formula("2+Abba").Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(6, (double)new Formula("2+Abba").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
@@ -295,21 +341,21 @@ namespace FormulaTests
         [TestCategory("10")]
         public void TestOrderOperations()
         {
-            Assert.AreEqual(20, (double) new Formula("2 + 6*3").Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(20, (double)new Formula("2 + 6*3").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
         [TestCategory("11")]
         public void TestParenthesesTimes()
         {
-            Assert.AreEqual(24, (double) new Formula("(2+6)*3").Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(24, (double)new Formula("(2+6)*3").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
         [TestCategory("14")]
         public void TestPlusComplex()
         {
-            Assert.AreEqual(14, (double) new Formula("2+(3+5*9)/Abba").Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(14, (double)new Formula("2+(3+5*9)/Abba").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
@@ -325,7 +371,7 @@ namespace FormulaTests
         [TestCategory("17")]
         public void TestComplexAndParentheses()
         {
-            Assert.AreEqual(194, (double) new Formula("2+3*5+(3+4*8)*5+2").Evaluate(IntermedLookup), 1e-9);
+            Assert.AreEqual(194, (double)new Formula("2+3*5+(3+4*8)*5+2").Evaluate(IntermedLookup), 1e-9);
         }
 
         [TestMethod(), Timeout(5000)]
@@ -380,7 +426,7 @@ namespace FormulaTests
         public void TestComplexNestedParensLeft()
         {
             Formula f = new Formula("((((x1+x2)+x3)+x4)+x5)+x6");
-            Assert.AreEqual(30, (double) f.Evaluate(BasicLookup), 1e-9);
+            Assert.AreEqual(30, (double)f.Evaluate(BasicLookup), 1e-9);
         }
 
         /// <summary>
