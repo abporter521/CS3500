@@ -7,6 +7,13 @@ using System.Linq;
 
 namespace FormulaTests
 {
+    /// <summary>
+    /// This is my tester class for PS3. Besides the tests are 3 private helper methods: 
+    /// 2 lookup methods and 1 normalizer.  These tests were in part the same ones used to 
+    /// grade PS1 and  27 of them are original to this project. I believe the tests names are
+    /// sufficient descriptions and a few XML comments are made where I think the test name is vague.
+    /// @author Andrew Porter, 16 September 2020
+    /// </summary>
     [TestClass]
     public class FormulaTests
     {
@@ -18,7 +25,7 @@ namespace FormulaTests
             Assert.AreEqual(28.0, x);
         }
         [TestMethod]
-        public void BasicFormulaWithVar()
+        public void BasicFormulaWithVarCompiles()
         {
             Formula f = new Formula("3+_3");
             double x = (double)f.Evaluate(BasicLookup);
