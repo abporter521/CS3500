@@ -49,6 +49,7 @@ namespace SpreadsheetUtilities
     /// </summary>
     public class Formula
     {
+        //These are the class variables that are created with each object
         private string formulaString;
         private Func<string, string> normalizer;
         private Func<string, bool> validator;
@@ -92,10 +93,14 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            //Tokens are placed in Token string array, placeHolder is the index of this array
             int placeHolder = 0;
+            //A double to assign in case token is double
             double i;
+            //Counts ( and )
             int closeParen = 0;
             int openParen = 0;
+            //Initializes before token which stores token before the current token in token array
             string beforeToken = "";
             Regex varPattern = new Regex(basicVarPattern);
 
@@ -106,14 +111,17 @@ namespace SpreadsheetUtilities
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
-                //Check if previous term is a double for checking Extra Following Rule
+                //Create bool to check if previous term is a double for checking Extra Following Rule
                 bool beforeIsDouble = false;
+                //Assigns beforeToken to previous element in tokens
                 if (placeHolder > 0)
                     beforeToken = tokens[placeHolder - 1];
                 double old;
+                //Checks if previous term is a double
                 if (double.TryParse(beforeToken, out old))
                     beforeIsDouble = true;
 
+                //Check if the token is (, ), +, -, /, *
                 if (token == "(" || token == "+" || token == "-" || token == ")" || token == "*" || token == "/")
                 {
                     //Checks Starting Token Rule
@@ -124,17 +132,21 @@ namespace SpreadsheetUtilities
                         throw new FormulaFormatException("Formula must end with a valid variable, number, or ) .");
                     //Checks Parenthesis/Operator Following Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && beforeToken == "(")
-                        throw new FormulaFormatException("Formula cannot have operator immediately following ( .");
+                        throw new FormulaFormatException("Formula cannot have operator immediately following ( . Try adding a variable or number.");
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
+                        //If before token is ), a variable, or a double, Extra Following Rule is violated
                         if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
                         openParen++;
                     }
+                    //Increments ) counter
                     if (token == ")")
                         closeParen++;
+                    //Add the token to the tokens array
                     tokens[placeHolder] = token;
+                    //Update placeHolder variable
                     placeHolder++;
                     continue;
                 }
@@ -144,7 +156,9 @@ namespace SpreadsheetUtilities
                     //Checks Extra Following Rule
                     if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                         throw new FormulaFormatException("Implicit multiplication is not allowed.");
+                    //Saves double to the tokens array
                     tokens[placeHolder] = token;
+                    //Update placeHolder variable
                     placeHolder++;
                     continue;
                 }
@@ -157,10 +171,12 @@ namespace SpreadsheetUtilities
                         //Checks Extra Following Rule
                         if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
                             throw new FormulaFormatException("Implicit multiplication is not allowed.");
+                        //Save the normalized variable to tokens array
                         tokens[placeHolder] = normalize(token);
                         placeHolder++;
                     }
                 }
+                //If token goes through all these if statements and does not trigger them, it must be that the token is of an invalid format so throw error
                 else
                     throw new FormulaFormatException("There is an invalid variable or character in the formula.\n Make sure variables are of valid format.");
             }
@@ -199,28 +215,32 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
+            //Stacks to keep track of values and operators
             Stack<string> operators = new Stack<string>();
             Stack<double> values = new Stack<double>();
             foreach (string tok in tokens)
             {
                 double i = 0;
 
-                //If token is an integer, check for the next operator. If *, or / perform
+                //If token is a double, check for the next operator. If *, or / perform
                 // the operation, otherwise push the integer
                 if (double.TryParse(tok, out i) && !(operators.Count == 0))
                 {
                     switch (operators.Peek())
                     {
+                        //If * found, perform operation and push value to stack
                         case "*":
                             values.Push(values.Pop() * i);
                             operators.Pop();
                             break;
+                       //If / found, perform operation if divsior is not 0 and push value to stack
                         case "/":
                             if (i == 0)
                                 return new FormulaError("Cannot divide by 0");
                             values.Push(values.Pop() / i);
                             operators.Pop();
                             break;
+                        //If neither are found, push double to stack
                         default:
                             values.Push(i);
                             break;
@@ -248,12 +268,16 @@ namespace SpreadsheetUtilities
                         //to the operator stack. Otherwise just push + to stack
                         switch (operators.Peek())
                         {
+                            //If + is found, add the next two values on value stack and push to stack
+                            //then push operator to operator stack
                             case "+":
                                 i = values.Pop() + values.Pop();
                                 operators.Pop();
                                 values.Push(i);
                                 operators.Push(tok);
                                 break;
+                            //If - is found, subtract the next two values on value stack and push to stack
+                            //then push operator to operator stack
                             case "-":
                                 double subtractor = values.Pop();
                                 i = values.Pop() - subtractor;
@@ -261,11 +285,13 @@ namespace SpreadsheetUtilities
                                 values.Push(i);
                                 operators.Push(tok);
                                 break;
+                            //Push + or - to stack
                             default:
                                 operators.Push(tok);
                                 break;
                         }
                     }
+                    //Push + or - to operator stack if operator stack is empty
                     else
                         operators.Push(tok);
                 }
@@ -298,7 +324,8 @@ namespace SpreadsheetUtilities
                             if (operators.Peek() == "(")
                                 operators.Pop();
                             break;
-
+                        //Check if - exists in the parenthetical expression
+                        //if yes, perform operation and push to stack
                         case "-":
                             double subtraction = values.Pop();
                             i = values.Pop() - subtraction;
@@ -307,7 +334,7 @@ namespace SpreadsheetUtilities
                             if (operators.Peek() == "(")
                                 operators.Pop();
                             break;
-
+                        //If ( is found, we consider the parenthetical expression complete and pop ( from stack
                         case "(":
                             operators.Pop();
                             break;
@@ -320,11 +347,13 @@ namespace SpreadsheetUtilities
                     {
                         switch (operators.Peek())
                         {
+                            //If * is found, perform operation and push product to stack
                             case "*":
                                 i = values.Pop() * values.Pop();
                                 operators.Pop();
                                 values.Push(i);
                                 break;
+                            //As long as divisor is not 0, perform operation and push quotient ot stack
                             case "/":
                                 double divisor = values.Pop();
                                 if (divisor == 0)
@@ -341,24 +370,30 @@ namespace SpreadsheetUtilities
                 //as the double section
                 else if (validator(tok))
                 {
+                    //Retrieves value of variable from lookup method
                     i = lookup(tok);
+                    //If there are no operators, push value to stack
                     if (operators.Count == 0)
                     {
                         values.Push(i);
                         continue;
                     }
+                    //If there are operators, perform operation
                     switch (operators.Peek())
                     {
+                        //If * is found, calculate and push product to stack
                         case "*":
                             values.Push(values.Pop() * i);
                             operators.Pop();
                             break;
+                       //If / is found and variable does not return 0, calculate and push quotient to stack
                         case "/":
                             if (i == 0)
                                 return new FormulaError("Cannot divide by 0");
                             values.Push(values.Pop() / i);
                             operators.Pop();
                             break;
+                       //Else push variable value to stack
                         default:
                             values.Push(i);
                             break;
@@ -368,8 +403,10 @@ namespace SpreadsheetUtilities
             //Pop stacks and return value. Value in operator stack should be + or -
             if (operators.Count == 1 && values.Count == 2)
             {
+                //if + is left, calculate and return sum
                 if (operators.Peek() == "+")
                     return values.Pop() + values.Pop();
+                //If - is left, calculate and return difference
                 else if (operators.Peek() == "-")
                 {
                     double subtractor = values.Pop();
@@ -403,7 +440,7 @@ namespace SpreadsheetUtilities
                     //Check if variable was already returned
                     if (var.Contains(varTok))
                         continue;
-
+                    //Return the variable
                     yield return varTok;
                     var.Add(varTok);
                 }
@@ -464,7 +501,7 @@ namespace SpreadsheetUtilities
             double resultThis;
             foreach (string item in f.TokensArray)
             {
-                //Checks for sameness in doubles
+                //Checks for equality in doubles
                 if (Double.TryParse(item, out resultObj))
                 {
                     //if this does not have a double, but f does, return false
