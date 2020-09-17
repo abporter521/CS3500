@@ -106,8 +106,8 @@ namespace SpreadsheetUtilities
             //Checks that all tokens are of valid format
             foreach (string token in GetTokens(formula))
             {
+                //Check if previous term is a double for checking Extra Following Rule
                 bool beforeIsDouble = false;
-
                 if (placeHolder > 0)
                     beforeToken = tokens[placeHolder - 1];
                 double old;
@@ -227,16 +227,16 @@ namespace SpreadsheetUtilities
                     }
                 }
 
-                //if the first token of the whole expression is an integer, push onto value stack
+                //If the first token of the whole expression is an integer, push onto value stack
                 else if (double.TryParse(tok, out i) && (operators.Count == 0))
                     values.Push(i);
 
-                // if token is * or /, push onto operator stack
+                // If token is * or /, push onto operator stack
                 else if (tok == "*" || tok == "/")
                     operators.Push(tok);
 
-                //if token is + or -, check if previous operator on stack is also + or -.
-                //If so, perform the operation otherwise and add operator to stack, 
+                //If token is + or -, check if previous operator on stack is also + or -.
+                //If so, perform the operation and add operator to stack, 
                 //otherwise just add operator to stack
                 else if (tok == "+" || tok == "-")
                 {
@@ -338,10 +338,10 @@ namespace SpreadsheetUtilities
                 }
 
                 //if token is a variable, lookup variable value and perform same algorithm
-                //as the integer section
-                else if (validator(normalizer(tok)))
+                //as the double section
+                else if (validator(tok))
                 {
-                    i = lookup(normalizer(tok));
+                    i = lookup(tok);
                     if (operators.Count == 0)
                     {
                         values.Push(i);
@@ -364,9 +364,6 @@ namespace SpreadsheetUtilities
                             break;
                     }
                 }
-                //If the token variable is not a valid variable format after being normalized, exception is thrown
-                else if (!validator(normalizer(tok)))
-                    return new FormulaError("The normalized variable is unknown");
             }
             //Pop stacks and return value. Value in operator stack should be + or -
             if (operators.Count == 1 && values.Count == 2)
@@ -400,7 +397,7 @@ namespace SpreadsheetUtilities
             Regex varPattern = new Regex(basicVarPattern);
             foreach (string varTok in tokens)
             {
-                //Check if variable matches specification
+                //Check if variable matches specification and does not print operator token
                 if (varPattern.IsMatch(varTok) && validator(varTok))
                 {
                     //Check if variable was already returned
@@ -475,7 +472,7 @@ namespace SpreadsheetUtilities
                         return false;
                     else
                     {
-                        //If doubles are equal, do nothing. Else return false
+                        //If doubles are equal after converting back to string, do nothing. Else return false
                         if (resultObj.ToString().Equals(resultThis.ToString()))
                         {
                             i++;
@@ -485,6 +482,7 @@ namespace SpreadsheetUtilities
                             return false;
                     }
                 }
+                //If any token in index i is not equivalent to f's token at index i, return false
                 if (this.TokensArray[i] != f.TokensArray[i])
                     return false;
                 i++;
@@ -575,7 +573,7 @@ namespace SpreadsheetUtilities
 
         }
         /// <summary>
-        /// Helper to get tokens array.
+        /// Helper to get access tokens array.
         /// </summary>
         public string[] TokensArray
         {
