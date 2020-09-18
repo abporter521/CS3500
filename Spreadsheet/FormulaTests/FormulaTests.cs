@@ -18,14 +18,14 @@ namespace FormulaTests
     public class FormulaTests
     {
         [TestMethod]
-        public void BasicFormula()
+        public void BasicFormulaEval()
         {
             Formula f = new Formula("3+25");
             double x = (double)f.Evaluate(BasicLookup);
             Assert.AreEqual(28.0, x);
         }
         [TestMethod]
-        public void BasicFormulaWithVarCompiles()
+        public void BasicFormulaEvalWithVarCompiles()
         {
             Formula f = new Formula("3+_3");
             double x = (double)f.Evaluate(BasicLookup);
@@ -42,7 +42,7 @@ namespace FormulaTests
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void IsEmpty()
+        public void FormulaIsEmpty()
         {
             Formula f = new Formula(" ");
         }
