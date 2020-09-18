@@ -440,7 +440,7 @@ namespace SpreadsheetUtilities
                     //Check if variable was already returned
                     if (var.Contains(varTok))
                         continue;
-                    //Return the variable
+                    //Return the variable and place in var hashSet so that it is not returned again
                     yield return varTok;
                     var.Add(varTok);
                 }
@@ -460,6 +460,7 @@ namespace SpreadsheetUtilities
         public override string ToString()
         {
             StringBuilder formula = new StringBuilder();
+            //Add each token of the formula to the string 
             foreach (string formulaPieces in tokens)
             {
                 formula.Append(formulaPieces);
@@ -497,6 +498,7 @@ namespace SpreadsheetUtilities
             if (f.TokensArray.Length != this.TokensArray.Length)
                 return false;
             int i = 0;
+            //doubles that represent possible doubles found while checking for equality
             double resultObj;
             double resultThis;
             foreach (string item in f.TokensArray)
@@ -535,8 +537,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
+            //If both f1 and f2 are null, they are equal, return true
             if (ReferenceEquals(f1, null) && ReferenceEquals(f2, null))
                 return true;
+            //If only one is null, return false
             if (ReferenceEquals(f1, null))
                 return false;
             return f1.Equals(f2);
@@ -549,8 +553,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
+            //If both f1 and f2 are null, they are equals, return false
             if (ReferenceEquals(f1, null) && ReferenceEquals(f2, null))
                 return false;
+            //If only one is null, return true
             if (ReferenceEquals(f1, null))
                 return true;
             return !(f1.Equals(f2));
@@ -570,9 +576,12 @@ namespace SpreadsheetUtilities
                 //Checks for sameness in doubles
                 if (Double.TryParse(item, out helperD))
                 {
+                    //Convert doubles back to string to assure equality of hashcodes
                     string convertedD = helperD.ToString();
+                    //Multiplication ensures uniqueness of hashcode
                     hashCode *= (convertedD.GetHashCode() / 2);
                 }
+                //Add to hashcode for non double tokens
                 else
                     hashCode += item.GetHashCode();
             }
