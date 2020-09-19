@@ -93,6 +93,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            //Make sure none of the constructor arguments are null
+            if (formula == null || normalize == null || isValid == null)
+                throw new FormulaFormatException("Contructor arguments cannot be null. Please enter in valid formula and methods");
             //Tokens are placed in Token string array, placeHolder is the index of this array
             int placeHolder = 0;
             //A double to assign in case token is double

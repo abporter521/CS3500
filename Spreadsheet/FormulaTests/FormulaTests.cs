@@ -224,6 +224,12 @@ namespace FormulaTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void ConstructFormulaWithNull()
+        {
+            Formula f = new Formula(null);
+        }
+        [TestMethod]
         public void NotEqualWithNull()
         {
             Formula f = new Formula("17.00 + 4/2 + A23");
