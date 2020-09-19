@@ -215,6 +215,10 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
+            //Check if lookup method is null, if so, return formula error
+            if (lookup == null)
+                return new FormulaError("Null lookup formula not allowed. Please input a lookup method");
+
             //Stacks to keep track of values and operators
             Stack<string> operators = new Stack<string>();
             Stack<double> values = new Stack<double>();
@@ -233,7 +237,7 @@ namespace SpreadsheetUtilities
                             values.Push(values.Pop() * i);
                             operators.Pop();
                             break;
-                       //If / found, perform operation if divsior is not 0 and push value to stack
+                        //If / found, perform operation if divsior is not 0 and push value to stack
                         case "/":
                             if (i == 0)
                                 return new FormulaError("Cannot divide by 0");
@@ -370,8 +374,16 @@ namespace SpreadsheetUtilities
                 //as the double section
                 else if (validator(tok))
                 {
-                    //Retrieves value of variable from lookup method
-                    i = lookup(tok);
+                    //Retrieves value of variable from lookup method. Return Formula Error if variable throws from lookup method
+                    try
+                    {
+                        i = lookup(tok);
+                    }
+                    catch (ArgumentException e)
+                    {
+                        //Throws error if variable is not found.
+                        return new FormulaError("The variable could not be found.\nLookup method threw exception. Please make sure the lookup method can find variable.");
+                    }
                     //If there are no operators, push value to stack
                     if (operators.Count == 0)
                     {
@@ -386,14 +398,14 @@ namespace SpreadsheetUtilities
                             values.Push(values.Pop() * i);
                             operators.Pop();
                             break;
-                       //If / is found and variable does not return 0, calculate and push quotient to stack
+                        //If / is found and variable does not return 0, calculate and push quotient to stack
                         case "/":
                             if (i == 0)
                                 return new FormulaError("Cannot divide by 0");
                             values.Push(values.Pop() / i);
                             operators.Pop();
                             break;
-                       //Else push variable value to stack
+                        //Else push variable value to stack
                         default:
                             values.Push(i);
                             break;
