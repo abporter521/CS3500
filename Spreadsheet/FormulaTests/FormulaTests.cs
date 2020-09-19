@@ -24,6 +24,21 @@ namespace FormulaTests
             double x = (double)f.Evaluate(BasicLookup);
             Assert.AreEqual(28.0, x);
         }
+
+        [TestMethod]
+        public void ExceptionThrownUnknownVariable()
+        {
+            Formula f = new Formula("12 + _1");
+            Assert.IsTrue(f.Evaluate(BasicLookup) is FormulaError);
+        }
+
+        [TestMethod]
+        public void PassNullLookupMethod()
+        {
+            Formula f = new Formula(" 12+ 7 +A1");
+            Assert.IsTrue(f.Evaluate(null) is FormulaError);
+        }
+
         [TestMethod]
         public void BasicFormulaEvalWithVarCompiles()
         {
@@ -436,6 +451,8 @@ namespace FormulaTests
         /// <returns></returns>
         public double BasicLookup(string s)
         {
+            if (s == "_1")
+                throw new ArgumentException();
             return 5d;
         }
 
@@ -456,6 +473,12 @@ namespace FormulaTests
             }
 
         }
+
+        /// <summary>
+        /// Simple normalizer 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         public string SimpleNormalizer(string s)
         {
             StringBuilder variable = new StringBuilder();
