@@ -18,9 +18,7 @@ namespace SS
             //The cell name
             private string name;
             //The formula of the cell stored as a Formula object, string, or double
-            private Formula formula;
-            private double formulaDouble;
-            private string formulaString;
+            private object formulaContent;
             //The value of the formula. Can be double or FormulaError object
             private object value;
 
@@ -32,7 +30,7 @@ namespace SS
             public Cell(string name, Formula formula)
             {
                 this.name = name;
-                this.formula = formula;
+                formulaContent = formula;
             }
             /// <summary>
             /// Constructor for Cell class with double content
@@ -42,7 +40,7 @@ namespace SS
             public Cell(string name, double formula)
             {
                 this.name = name;
-                this.formulaDouble = formula;
+                formulaContent = formula;
             }
             /// <summary>
             /// Constructor for Cell class with string content
@@ -52,15 +50,15 @@ namespace SS
             public Cell(string name, string formula)
             {
                 this.name = name;
-                this.formulaString = formula;
+                formulaContent = formula;
             }
 
             /// <summary>
             /// Getter method to retrieve Formula Object
             /// </summary>
-            public Formula GetFormula
+            public object GetFormulaContent
             {
-                get => formula;
+                get => formulaContent;
             }
         }
 
@@ -82,8 +80,12 @@ namespace SS
             //If so, throws NotImplementedException
             if(!IsValid(name) || name == null)
              throw new NotImplementedException();
-           
-
+            //if the cell does not exist, return an empty string
+            if (!(ss.ContainsKey(name)))
+                return "";
+            //Return the content of the cell
+            else
+                return ss[name].GetFormulaContent;         
         }
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
