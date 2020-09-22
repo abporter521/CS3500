@@ -88,9 +88,17 @@ namespace SS
                 return ss[name].GetFormulaContent;         
         }
 
+        /// <summary>
+        /// Enumerates the names of all the non-empty cells in the spreadsheet.
+        /// </summary>
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
-            throw new NotImplementedException();
+            if (ss.Count == 0)
+                throw new NotImplementedException();
+            foreach (string cellNames in ss.Keys)
+            {
+                yield return cellNames;
+            }
         }
 
         public override IList<string> SetCellContents(string name, double number)
