@@ -17,21 +17,43 @@ namespace SS
         {
             //The cell name
             private string name;
-            //The formula of the cell stored as a Formula object
+            //The formula of the cell stored as a Formula object, string, or double
             private Formula formula;
+            private double formulaDouble;
+            private string formulaString;
             //The value of the formula. Can be double or FormulaError object
             private object value;
 
             /// <summary>
-            /// Constructor for Cell class
+            /// Constructor for Cell class with Formula content
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="formula"></param>
+            public Cell(string name, Formula formula)
+            {
+                this.name = name;
+                this.formula = formula;
+            }
+            /// <summary>
+            /// Constructor for Cell class with double content
+            /// </summary>
+            /// <param name="name"></param>
+            /// <param name="formula"></param>
+            public Cell(string name, double formula)
+            {
+                this.name = name;
+                this.formulaDouble = formula;
+            }
+            /// <summary>
+            /// Constructor for Cell class with string content
             /// </summary>
             /// <param name="name"></param>
             /// <param name="formula"></param>
             public Cell(string name, string formula)
             {
                 this.name = name;
-                this.formula = new Formula(formula);
-            }            
+                this.formulaString = formula;
+            }
 
             /// <summary>
             /// Getter method to retrieve Formula Object
