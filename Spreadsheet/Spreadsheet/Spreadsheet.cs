@@ -162,7 +162,7 @@ namespace SS
             if (name is null || !IsValid(name))
                 throw new InvalidNameException();
             //Avoids adding this empty cell to our spreadsheet for NonEmptyCells method
-            if (IsEmptyString(text))
+            if (IsEmptyString(text) || text == "")
                 // If cell did not exist and has no content, return list with just name
                 return new List<string>() { name };
             //If cell name is not in the spreadsheet
@@ -208,7 +208,6 @@ namespace SS
             //If cell name is not in the spreadsheet, add name to spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, formula));
-
             //Else get the cell, update its contents and print the list
             else
                 ss[name] = new Cell(name, formula);
@@ -216,11 +215,11 @@ namespace SS
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
             //Build the dependency graph with the cell name
-            foreach (string depen in dependees)
-                dg.ReplaceDependees(name, dependees);
+            dg.ReplaceDependees(name, dependees);
             //Add Cell name to the beginning of the List as per method contract
-            dependees.Insert(0, name);
-            return dependees;
+            List<string> dependents = dg.GetDependents(name).ToList();
+            dependents.Insert(0, name);
+            return dependents;
         }
 
         /// <summary>
