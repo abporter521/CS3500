@@ -84,7 +84,7 @@ namespace SS
         {
             //Checks if the cell name is a valid variable or is null
             //If so, throws InvalidNameException
-            if (!IsValid(name) || name == null)
+            if (name == null || !IsValid(name))
                 throw new InvalidNameException();
             //if the cell does not exist, return an empty string
             if (!(ss.ContainsKey(name)))
@@ -101,7 +101,7 @@ namespace SS
         {
             //Check if spreadsheet is empty
             if (ss.Count == 0)
-                return new LinkedList<string>();
+                return new List<string>();
             LinkedList<string> cells = new LinkedList<string>();
             //For each cell, add to the list and return
             foreach (string cellNames in ss.Keys)
@@ -123,7 +123,7 @@ namespace SS
         /// </summary>
         public override IList<string> SetCellContents(string name, double number)
         {
-            if (!(IsValid(name)) || name == null)
+            if (name == null || !IsValid(name))
                 throw new InvalidNameException();
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
@@ -158,15 +158,20 @@ namespace SS
             //check if text is not null
             if (text is null)
                 throw new ArgumentNullException();
-            if (!(IsValid(name)) || name is null)
+            //If the name is null or has invalid cell name, throw exception
+            if (name is null || !IsValid(name))
                 throw new InvalidNameException();
- 
-            //If cell name is not in the spreadsheet and add to list
+            //Avoids adding this empty cell to our spreadsheet for NonEmptyCells method
+            if (IsEmptyString(text))
+                // If cell did not exist and has no content, return list with just name
+                return new List<string>() { name };
+            //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, text));
-            //Else get the cell, update its contents and print the list
+            //Else get the cell, update its contents
             else
                 ss[name] = new Cell(name, text);
+
             //Get dependents of the named cell
             List<string> dependents = dg.GetDependents(name).ToList();
             //Name no longer depends on cells because its content is a string, so remove
@@ -176,11 +181,29 @@ namespace SS
             dependents.Insert(0, name);
             return dependents;
         }
+        /// <summary>
+        /// If the formula parameter is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, if changing the contents of the named cell to be the formula would cause a 
+        /// circular dependency, throws a CircularException, and no change is made to the spreadsheet.
+        /// 
+        /// Otherwise, the contents of the named cell becomes formula.  The method returns a
+        /// list consisting of name plus the names of all other cells whose value depends,
+        /// directly or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// list {A1, B1, C1} is returned.
+        /// </summary>
 
         public override IList<string> SetCellContents(string name, Formula formula)
         {
+            //Check if formula is null
+            if (formula is null)
+                throw new ArgumentNullException();
             //Check if name is null or valid otherwise throw exception
-            if (!(IsValid(name)) || name == null)
+            if (name is null || !IsValid(name))
                 throw new InvalidNameException();
             //If cell name is not in the spreadsheet, add name to spreadsheet
             if (!ss.ContainsKey(name))
@@ -191,7 +214,7 @@ namespace SS
                 ss[name] = new Cell(name, formula);
 
             //Take out all the variables in the contents
-            List<string> dependees = formula.GetVariables().ToList();
+            IList<string> dependees = formula.GetVariables().ToList();
             //Build the dependency graph with the cell name
             foreach (string depen in dependees)
                 dg.ReplaceDependees(name, dependees);
@@ -217,6 +240,7 @@ namespace SS
         {
             if (name is null)
                 throw new InvalidNameException();
+            return null;
         }
 
         /// <summary>
@@ -305,6 +329,11 @@ namespace SS
             string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
             Regex varPattern = new Regex(basicVarPattern);
             return varPattern.IsMatch(name);
+        }
+        private bool IsEmptyString(string formula)
+        {
+            Regex empty = new Regex("^ +$");
+            return empty.IsMatch(formula);
         }
     }
 
