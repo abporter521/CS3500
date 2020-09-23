@@ -107,7 +107,7 @@ namespace SS
             foreach (string cellNames in ss.Keys)
             {
                 //If the cell contains an empty string, do not add to list
-                if (ss[cellNames].GetFormulaContent is string && (IsEmptyString((string)ss[cellNames].GetFormulaContent)|| ss[cellNames].GetFormulaContent == "") )
+                if (ss[cellNames].GetFormulaContent is string && (IsEmptyString((string)ss[cellNames].GetFormulaContent) || ss[cellNames].GetFormulaContent == ""))
                     continue;
                 //Add to the list of non-empty cells
                 else
@@ -136,14 +136,12 @@ namespace SS
             //Else get the cell, update its contents and print the list
             else
                 ss[name] = new Cell(name, number);
-            List<string> dependents = dg.GetDependents(name).ToList();
             //Name no longer depends on cells because its content is a double, so remove
             foreach (string dependee in dg.GetDependees(name))
                 dg.RemoveDependency(dependee, name);
-            //Insert name of cell to beginning of dependent list
-            dependents.Insert(0, name);
-            return dependents;
-
+            //Use GetCellsToRecalculate to return list
+            List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            return allDependents;
         }
 
         /// <summary>
@@ -166,25 +164,18 @@ namespace SS
             //If the name is null or has invalid cell name, throw exception
             if (name is null || !IsValid(name))
                 throw new InvalidNameException();
-            //Avoids adding this empty cell to our spreadsheet for NonEmptyCells method
-            //if (IsEmptyString(text) || text == "")
-            // If cell did not exist and has no content, return list with just name
-            //return new List<string>() { name };
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, text));
             //Else get the cell, update its contents
             else
                 ss[name] = new Cell(name, text);
-
-            //Get dependents of the named cell
-            List<string> dependents = dg.GetDependents(name).ToList();
             //Name no longer depends on cells because its content is a string, so remove
             foreach (string dependee in dg.GetDependees(name))
                 dg.RemoveDependency(dependee, name);
-            //Insert name of cell to beginning of dependent list
-            dependents.Insert(0, name);
-            return dependents;
+            //Use GetCellsToRecalculate to return list
+            List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            return allDependents;
         }
         /// <summary>
         /// If the formula parameter is null, throws an ArgumentNullException.
@@ -221,10 +212,9 @@ namespace SS
             IList<string> dependees = formula.GetVariables().ToList();
             //Build the dependency graph with the cell name
             dg.ReplaceDependees(name, dependees);
-            //Add Cell name to the beginning of the List as per method contract
-            List<string> dependents = dg.GetDependents(name).ToList();
-            dependents.Insert(0, name);
-            return dependents;
+            //Use GetCellsToRecalculate to return list
+            List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            return allDependents;
         }
 
         /// <summary>
