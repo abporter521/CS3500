@@ -106,7 +106,12 @@ namespace SS
             //For each cell, add to the list and return
             foreach (string cellNames in ss.Keys)
             {
-                cells.AddFirst(cellNames);
+                //If the cell contains an empty string, do not add to list
+                if (ss[cellNames].GetFormulaContent is string && (IsEmptyString((string)ss[cellNames].GetFormulaContent)|| ss[cellNames].GetFormulaContent == "") )
+                    continue;
+                //Add to the list of non-empty cells
+                else
+                    cells.AddFirst(cellNames);
             }
             return cells;
         }
@@ -162,9 +167,9 @@ namespace SS
             if (name is null || !IsValid(name))
                 throw new InvalidNameException();
             //Avoids adding this empty cell to our spreadsheet for NonEmptyCells method
-            if (IsEmptyString(text) || text == "")
-                // If cell did not exist and has no content, return list with just name
-                return new List<string>() { name };
+            //if (IsEmptyString(text) || text == "")
+            // If cell did not exist and has no content, return list with just name
+            //return new List<string>() { name };
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, text));
@@ -237,9 +242,9 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            if (name is null)
-                throw new InvalidNameException();
-            return null;
+            if (dg.HasDependents(name))
+                return dg.GetDependents(name);
+            return new List<string>();
         }
 
         /// <summary>
