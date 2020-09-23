@@ -101,12 +101,12 @@ namespace SS
         {
             //Check if spreadsheet is empty
             if (ss.Count == 0)
-                return new List<string>();
-            List<string> cells = new List<string>();
+                return new LinkedList<string>();
+            LinkedList<string> cells = new LinkedList<string>();
             //For each cell, add to the list and return
             foreach (string cellNames in ss.Keys)
             {
-                cells.Add(cellNames);
+                cells.AddFirst(cellNames);
             }
             return cells;
         }
@@ -132,7 +132,7 @@ namespace SS
             else
                 ss[name] = new Cell(name, number);
             List<string> dependents = dg.GetDependents(name).ToList();
-           //Name no longer depends on cells because its content is a double, so remove
+            //Name no longer depends on cells because its content is a double, so remove
             foreach (string dependee in dg.GetDependees(name))
                 dg.RemoveDependency(dependee, name);
             //Insert name of cell to beginning of dependent list
@@ -140,24 +140,41 @@ namespace SS
             return dependents;
 
         }
-        
+
+        /// <summary>
+        /// If text is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, the contents of the named cell becomes text.  The method returns a
+        /// list consisting of name plus the names of all other cells whose value depends, 
+        /// directly or indirectly, on the named cell.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// list {A1, B1, C1} is returned.
+        /// </summary>
         public override IList<string> SetCellContents(string name, string text)
         {
-            if (!(IsValid(name)) || name == null)
+            //check if text is not null
+            if (text is null)
+                throw new ArgumentNullException();
+            if (!(IsValid(name)) || name is null)
                 throw new InvalidNameException();
+ 
             //If cell name is not in the spreadsheet and add to list
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, text));
-
             //Else get the cell, update its contents and print the list
             else
                 ss[name] = new Cell(name, text);
-            //Get the variables from the text
-            List<string> dependents =
-
-
-
-
+            //Get dependents of the named cell
+            List<string> dependents = dg.GetDependents(name).ToList();
+            //Name no longer depends on cells because its content is a string, so remove
+            foreach (string dependee in dg.GetDependees(name))
+                dg.RemoveDependency(dependee, name);
+            //Insert name of cell to beginning of dependent list
+            dependents.Insert(0, name);
+            return dependents;
         }
 
         public override IList<string> SetCellContents(string name, Formula formula)
@@ -174,18 +191,108 @@ namespace SS
                 ss[name] = new Cell(name, formula);
 
             //Take out all the variables in the contents
-            List<string> dependents = formula.GetVariables().ToList();
+            List<string> dependees = formula.GetVariables().ToList();
             //Build the dependency graph with the cell name
-            foreach (string depen in dependents)
-                dg.ReplaceDependents(name, dependents);
+            foreach (string depen in dependees)
+                dg.ReplaceDependees(name, dependees);
             //Add Cell name to the beginning of the List as per method contract
-            dependents.Insert(0, name);
-            return dependents;
+            dependees.Insert(0, name);
+            return dependees;
         }
 
+        /// <summary>
+        /// Returns an enumeration, without duplicates, of the names of all cells whose
+        /// values depend directly on the value of the named cell.  In other words, returns
+        /// an enumeration, without duplicates, of the names of all cells that contain
+        /// formulas containing name.
+        /// 
+        /// For example, suppose that
+        /// A1 contains 3
+        /// B1 contains the formula A1 * A1
+        /// C1 contains the formula B1 + A1
+        /// D1 contains the formula B1 - C1
+        /// The direct dependents of A1 are B1 and C1
+        /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            throw new NotImplementedException();
+            if (name is null)
+                throw new InvalidNameException();
+        }
+
+        /// <summary>
+        /// Requires that names be non-null.  Also requires that if names contains s,
+        /// then s must be a valid non-null cell name.
+        /// 
+        /// If any of the named cells are involved in a circular dependency,
+        /// throws a CircularException.
+        /// 
+        /// Otherwise, returns an enumeration of the names of all cells whose values must
+        /// be recalculated, assuming that the contents of each cell named in names has changed.
+        /// The names are enumerated in the order in which the calculations should be done.  
+        /// 
+        /// For example, suppose that 
+        /// A1 contains 5
+        /// B1 contains 7
+        /// C1 contains the formula A1 + B1
+        /// D1 contains the formula A1 * C1
+        /// E1 contains 15
+        /// 
+        /// If A1 and B1 have changed, then A1, B1, and C1, and D1 must be recalculated,
+        /// and they must be recalculated in either the order A1,B1,C1,D1 or B1,A1,C1,D1.
+        /// The method will produce one of those enumerations.
+        /// 
+        /// PLEASE NOTE THAT THIS METHOD DEPENDS ON THE ABSTRACT METHOD GetDirectDependents.
+        /// IT WON'T WORK UNTIL GetDirectDependents IS IMPLEMENTED CORRECTLY.
+        /// </summary>
+        protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
+        {
+            LinkedList<String> changed = new LinkedList<String>();
+            HashSet<String> visited = new HashSet<String>();
+            foreach (String name in names)
+            {
+                if (!visited.Contains(name))
+                {
+                    Visit(name, name, visited, changed);
+                }
+            }
+            return changed;
+        }
+
+
+        /// <summary>
+        /// A convenience method for invoking the other version of GetCellsToRecalculate
+        /// with a singleton set of names.  See the other version for details.
+        /// </summary>
+        protected IEnumerable<String> GetCellsToRecalculate(String name)
+        {
+            return GetCellsToRecalculate(new HashSet<String>() { name });
+        }
+
+
+        /// <summary>
+        /// A helper for the GetCellsToRecalculate method.
+        /// 
+        /// </summary>
+        private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
+        {
+            //Adds the cell name to the list, signifying that it has been visited.
+            visited.Add(name);
+            //Runs a depth-first search on the current cell
+            foreach (String n in GetDirectDependents(name))
+            {
+                //If the cell encountered is the same as the starting point, a cycle is detected and throws
+                if (n.Equals(start))
+                {
+                    throw new CircularException();
+                }
+                //If the cell has not been visited, recursively run this method on the cell
+                else if (!visited.Contains(n))
+                {
+                    Visit(start, n, visited, changed);
+                }
+            }
+            //Add cell to the beginning of the changed list
+            changed.AddFirst(name);
         }
 
         /// <summary>
@@ -197,26 +304,8 @@ namespace SS
         {
             string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
             Regex varPattern = new Regex(basicVarPattern);
-            if (varPattern.IsMatch(name))
-                return true;
-            return false;
+            return varPattern.IsMatch(name);
         }
-
-        /// <summary>
-        /// Helper method to pick out variables in a cell with 
-        /// string context
-        /// </summary>
-        /// <param name="formulatext"></param>
-        private IList<string> GetCellDependencies(string formulatext)
-        {
-
-            foreach (string token in formulatext)
-            {
-
-            }
-
-        }
-
     }
 
 }
