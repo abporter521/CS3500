@@ -26,6 +26,8 @@ namespace SS
             private object formulaContent;
             //The value of the formula. Can be double or FormulaError object
             private object value;
+            //Helper variable to see if cell is empty 
+            private bool empty;
 
             /// <summary>
             /// Constructor for Cell class with Formula content
@@ -36,6 +38,7 @@ namespace SS
             {
                 this.name = name;
                 formulaContent = formula;
+                empty = false;
             }
             /// <summary>
             /// Constructor for Cell class with double content
@@ -46,6 +49,7 @@ namespace SS
             {
                 this.name = name;
                 formulaContent = formula;
+                empty = false;
             }
             /// <summary>
             /// Constructor for Cell class with string content
@@ -56,6 +60,9 @@ namespace SS
             {
                 this.name = name;
                 formulaContent = formula;
+                if (IsEmptyString(formula) || formula == "")
+                    empty = true;
+                else empty = false;
             }
 
             /// <summary>
@@ -65,10 +72,25 @@ namespace SS
             {
                 get => formulaContent;
             }
+            /// <summary>
+            /// Helper to set empty boolean
+            /// </summary>
+            /// <param name="formula"></param>
+            /// <returns></returns>
+            private bool IsEmptyString(string formula)
+            {
+                Regex empty = new Regex("^ +$");
+                return empty.IsMatch(formula);
+            }
+
+            public bool IsEmptyCell ()
+            {
+                return empty;
+            }
         }
 
         /// <summary>
-        /// Empty Constructor of spreadsheet class
+        /// Constructor of spreadsheet class. Instantiates ss (spreadsheet) and dg (dependency graph)
         /// </summary>
         public Spreadsheet()
         {
@@ -87,7 +109,10 @@ namespace SS
             if (name == null || !IsValid(name))
                 throw new InvalidNameException();
             //if the cell does not exist, return an empty string
-            if (!(ss.ContainsKey(name)))
+            if (!ss.ContainsKey(name))
+                return "";
+            //Check if the cell is empty
+            else if (ss[name].IsEmptyCell())
                 return "";
             //Return the content of the cell
             else
@@ -107,7 +132,7 @@ namespace SS
             foreach (string cellNames in ss.Keys)
             {
                 //If the cell contains an empty string, do not add to list
-                if (ss[cellNames].GetFormulaContent is string && (IsEmptyString((string)ss[cellNames].GetFormulaContent) || ss[cellNames].GetFormulaContent == ""))
+                if (ss[cellNames].IsEmptyCell())
                     continue;
                 //Add to the list of non-empty cells
                 else
@@ -201,7 +226,7 @@ namespace SS
             //Check if name is null or valid otherwise throw exception
             if (name is null || !IsValid(name))
                 throw new InvalidNameException();
-            //Holds original dependencies of graph in case of circular exception
+            //Holds original dependencies of graph and content in case of circular exception
             List<string> originalDependees;
             Cell originalContent;
             //If cell name is not in the spreadsheet, add name to spreadsheet
@@ -214,22 +239,24 @@ namespace SS
                 //Add Cell to list
                 ss.Add(name, new Cell(name, formula));
             }
-            //Else get the cell, update its contents and print the list
+            //Else get the cell, update its contents
             else
             {
                 //Stores the original dependency list
                 originalDependees = dg.GetDependees(name).ToList();
-                //stores the original content of the cell
+                //stores the original cell
                 originalContent = ss[name];
+                //Set new formula as cell content
                 ss[name] = new Cell(name, formula);
             }
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
-            //Build the dependency graph with the cell name
+            //Build the dependency graph with the new dependencies of the formula
             dg.ReplaceDependees(name, dependees);
             //Use GetCellsToRecalculate to return list or detect CircularException
             try
             {
+                
                 List<string> allDependents = GetCellsToRecalculate(name).ToList();
                 return allDependents;
             }
@@ -350,11 +377,6 @@ namespace SS
             string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
             Regex varPattern = new Regex(basicVarPattern);
             return varPattern.IsMatch(name);
-        }
-        private bool IsEmptyString(string formula)
-        {
-            Regex empty = new Regex("^ +$");
-            return empty.IsMatch(formula);
         }
     }
 
