@@ -50,8 +50,62 @@ namespace ss
         public void GetCellContentsValidFormula()
         {
             Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A4", new Formula("B4+7"));
+            Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
+        }
+        /// <summary>
+        /// Tests return is CircularException for cell with circular dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void GetCellContentsFormulaCircular()
+        {
+            Spreadsheet s = new Spreadsheet();
             s.SetCellContents("A4", new Formula("A4+7"));
-            Assert.AreEqual(new Formula("A4+7"), s.GetCellContents("A4"));
+         
+        }
+        /// <summary>
+        /// Tests return is CircularException for spreadsheet originally not cyclical
+        /// the contents are modified and a cycle is made
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void GetCellContentsFormulaCreateCircularException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A4", new Formula("B4+7"));
+            s.SetCellContents("B4", new Formula("C4 -1"));
+            s.SetCellContents("C4", new Formula("8+2"));
+            Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("B4", new Formula("A4/2"));
+        }
+        /// <summary>
+        /// Tests return is CircularException for cell with circular dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void GetCellContentsFormulaCircularThreeElements()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A4", new Formula("B4+7"));
+            s.SetCellContents("B4", new Formula("C4 -1"));
+            s.SetCellContents("C4", new Formula("A4+2"));           
+        }
+        /// <summary>
+        /// Given a valid dependency graph, if I change one in the middle,
+        /// I want to assert that changes are made throughout
+        /// </summary>
+        [TestMethod]
+        public void DependencyChange()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A4", new Formula("B4+7"));
+            s.SetCellContents("B4", new Formula("C4 -1"));
+            s.SetCellContents("C4", new Formula("8+2"));
+            Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("B4", new Formula("8/2"));
+            Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
+
         }
         /// <summary>
         /// Tests return is throw exception for invalid name 
@@ -120,8 +174,13 @@ namespace ss
             LinkedList<string> cells = new LinkedList<string>();
             cells.AddLast("c17");
             cells.AddLast("A1");
-            Assert.IsTrue(cells.First().Equals(s.GetNamesOfAllNonemptyCells().First()));
-            Assert.IsTrue(cells.Last().Equals(s.GetNamesOfAllNonemptyCells().Last()));
+            s.SetCellContents("A5", " ");
+            Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("A5", "hello World");
+            cells.AddLast("A5");
+            Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("A5", "");
+            Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
         }
         /// <summary>
         /// Tests if dependency graph is properly created
@@ -133,7 +192,11 @@ namespace ss
             Spreadsheet s = new Spreadsheet();
             graph = s.SetCellContents("A5", new Formula("B5-4"));
             Assert.IsTrue(graph.Count() == 1);
-            s.SetCellContents("A1", new Formula("3+1"));
+            s.SetCellContents("A1", new Formula("B2+1"));
+            s.SetCellContents("A3", new Formula("B5/6"));
+            graph = s.SetCellContents("B5", 8);
+            Assert.AreEqual(3, graph.Count());
+
         }
     }
 }
