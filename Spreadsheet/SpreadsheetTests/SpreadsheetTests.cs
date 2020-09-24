@@ -9,6 +9,12 @@ namespace ss
 {
     /// <summary>
     /// This is my test class for PS5
+    /// 
+    /// I have not been allowed by the program structure to assign null
+    /// as a cell content for any test. For this reason, there are not
+    /// spreadsheets with null cells but valid cell names. For this coverage is
+    /// not 100%. These lines were kept though to comply with method contracts
+    /// 
     /// Andrew Porter 22 Sept 2
     /// </summary>
     [TestClass]
@@ -61,10 +67,24 @@ namespace ss
         {
             Spreadsheet s = new Spreadsheet();
             Assert.AreEqual(1,s.SetCellContents("A4", new Formula("B4+7")).Count());
-            Assert.AreEqual(2,s.SetCellContents("B4", new Formula("C4 -1")).Count());
+            Assert.AreEqual(2,s.SetCellContents("B4", new Formula("C4 + 2")).Count());
             Assert.AreEqual(3, s.SetCellContents("C4", new Formula("8+2")).Count());
-            Assert.AreEqual(2, s.SetCellContents("B4", 32.0).Count());
-           // Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")));
+            s.SetCellContents("B4", 3);
+            Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")).Count());
+        }
+       
+        /// <summary>
+        /// Tests cell dependency is correctly created
+        /// </summary>
+        [TestMethod]
+        public void ChangeDependencyString()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Assert.AreEqual(1, s.SetCellContents("A4", new Formula("B4+7")).Count());
+            Assert.AreEqual(2, s.SetCellContents("B4", new Formula("C4 + 2")).Count());
+            Assert.AreEqual(3, s.SetCellContents("C4", new Formula("8+2")).Count());
+            s.SetCellContents("B4", "work please");
+            Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")).Count());
         }
         /// <summary>
         /// Tests if the method throws exception
@@ -76,6 +96,7 @@ namespace ss
             Spreadsheet s = new Spreadsheet();
             s.SetCellContents(null, 4);
         }
+
         /// <summary>
         /// Tests that return is empty list for new spreadsheet or spreadsheet
         /// with only empty cells
