@@ -44,6 +44,69 @@ namespace ss
             Assert.AreEqual("c7+ 2k", s.GetCellContents("A4"));
         }
         /// <summary>
+        /// Tests if the method accepts cell name with whitespace
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void WhitespaceInCellName()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A5 ", "1+1");
+        }
+        /// <summary>
+        /// Tests cell dependency is correctly created
+        /// </summary>
+        [TestMethod]
+        public void ChangeDependencyDouble()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Assert.AreEqual(1,s.SetCellContents("A4", new Formula("B4+7")).Count());
+            Assert.AreEqual(2,s.SetCellContents("B4", new Formula("C4 -1")).Count());
+            Assert.AreEqual(3, s.SetCellContents("C4", new Formula("8+2")).Count());
+            Assert.AreEqual(2, s.SetCellContents("B4", 32.0).Count());
+           // Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")));
+        }
+        /// <summary>
+        /// Tests if the method throws exception
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void DoubleInvalidName()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents(null, 4);
+        }
+        /// <summary>
+        /// Tests that return is empty list for new spreadsheet or spreadsheet
+        /// with only empty cells
+        /// </summary>
+        [TestMethod]
+        public void EmptyCellNewSpreadsheet()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("A2", "");
+            s.SetCellContents("B2", "  ");
+            s.SetCellContents("C4", "");
+            s.SetCellContents("D4", "      ");
+            Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("C4", "Hope this Works");
+            Assert.AreEqual(1, s.GetNamesOfAllNonemptyCells().Count());
+        }
+        /// <summary>
+        /// Get the cell content of a cell that had something,
+        /// then change to empty to be sure it returns empty
+        /// </summary>
+        [TestMethod]
+        public void ChangeAndGetCellContents()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A4", 32.0);
+            Assert.AreEqual(32.0, s.GetCellContents("A4"));
+            s.SetCellContents("A4", " ");
+            Assert.AreEqual("", s.GetCellContents("A4"));
+        }
+        /// <summary>
         /// Tests return is formula for valid cell 
         /// </summary>
         [TestMethod]
@@ -61,8 +124,7 @@ namespace ss
         public void GetCellContentsFormulaCircular()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("A4+7"));
-         
+            s.SetCellContents("A4", new Formula("A4+7"));        
         }
         /// <summary>
         /// Tests return is CircularException for spreadsheet originally not cyclical
@@ -141,6 +203,17 @@ namespace ss
             s.SetCellContents("_A5", "5-b2");
             Assert.AreEqual("5-b2", s.GetCellContents("_A5"));
             s.GetCellContents("5_V");
+        }
+        /// <summary>
+        /// See what happens when a cell is instantiated
+        /// with a formula object containing invalid formula
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void FormulaContentInvalid()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("_1", new Formula("$2 + 1"));
         }
         /// <summary>
         /// Tests if all the nonempty cells are returned
