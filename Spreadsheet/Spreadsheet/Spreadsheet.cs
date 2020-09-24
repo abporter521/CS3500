@@ -256,9 +256,8 @@ namespace SS
             //Use GetCellsToRecalculate to return list or detect CircularException
             try
             {
-                
-                List<string> allDependents = GetCellsToRecalculate(name).ToList();
-                return allDependents;
+                //Will throw exception or return the list.
+                return GetCellsToRecalculate(name).ToList(); 
             }
             catch(CircularException)
             {
