@@ -201,20 +201,47 @@ namespace SS
             //Check if name is null or valid otherwise throw exception
             if (name is null || !IsValid(name))
                 throw new InvalidNameException();
+            //Holds original dependencies of graph in case of circular exception
+            List<string> originalDependees;
+            Cell originalContent;
             //If cell name is not in the spreadsheet, add name to spreadsheet
             if (!ss.ContainsKey(name))
+            {
+                //No original dependees, so new list
+                originalDependees = new List<string>();
+                //No original content, so cell is empty
+                originalContent = new Cell(name,"");
+                //Add Cell to list
                 ss.Add(name, new Cell(name, formula));
+            }
             //Else get the cell, update its contents and print the list
             else
+            {
+                //Stores the original dependency list
+                originalDependees = dg.GetDependees(name).ToList();
+                //stores the original content of the cell
+                originalContent = ss[name];
                 ss[name] = new Cell(name, formula);
-
+            }
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
             //Build the dependency graph with the cell name
             dg.ReplaceDependees(name, dependees);
-            //Use GetCellsToRecalculate to return list
-            List<string> allDependents = GetCellsToRecalculate(name).ToList();
-            return allDependents;
+            //Use GetCellsToRecalculate to return list or detect CircularException
+            try
+            {
+                List<string> allDependents = GetCellsToRecalculate(name).ToList();
+                return allDependents;
+            }
+            catch(CircularException)
+            {
+                //Revert to original dependency graph
+                dg.ReplaceDependees(name, originalDependees);
+                //Revert cell to original content
+                ss[name] = originalContent;
+                //throw exception
+                throw new CircularException();
+            }
         }
 
         /// <summary>
