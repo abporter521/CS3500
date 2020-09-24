@@ -162,7 +162,7 @@ namespace SS
             else
                 ss[name] = new Cell(name, number);
             //Name no longer depends on cells because its content is a double, so remove
-            foreach (string dependee in dg.GetDependees(name))
+            foreach (string dependee in dg.GetDependees(name).ToList())
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
@@ -196,7 +196,7 @@ namespace SS
             else
                 ss[name] = new Cell(name, text);
             //Name no longer depends on cells because its content is a string, so remove
-            foreach (string dependee in dg.GetDependees(name))
+            foreach (string dependee in dg.GetDependees(name).ToList())
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
