@@ -291,8 +291,10 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
+            //Check if dependent graph contains the name of the cell
             if (dg.HasDependents(name))
                 return dg.GetDependents(name);
+            //Name does not have dependents so return empty list
             return new List<string>();
         }
 

@@ -320,7 +320,7 @@ namespace ss
             s.SetCellContents("A4", "");
             s.SetCellContents("A6", "");
             s.SetCellContents("A7", " ");
-            Assert.AreEqual(1, s.SetCellContents("B5", " ").Count());
+            Assert.AreEqual("B5", s.SetCellContents("B5", " ").First());
             Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
         }
     }
