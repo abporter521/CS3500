@@ -110,9 +110,9 @@ namespace ss
             s.SetCellContents("B2", "  ");
             s.SetCellContents("C4", "");
             s.SetCellContents("D4", "      ");
-            Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
             s.SetCellContents("C4", "Hope this Works");
-            Assert.AreEqual(1, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
         }
         /// <summary>
         /// Get the cell content of a cell that had something,
@@ -125,7 +125,7 @@ namespace ss
             s.SetCellContents("A4", 32.0);
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
             s.SetCellContents("A4", " ");
-            Assert.AreEqual("", s.GetCellContents("A4"));
+            Assert.AreEqual(" ", s.GetCellContents("A4"));
         }
         /// <summary>
         /// Tests return is formula for valid cell 
@@ -269,7 +269,7 @@ namespace ss
             cells.AddLast("c17");
             cells.AddLast("A1");
             s.SetCellContents("A5", " ");
-            Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
             s.SetCellContents("A5", "hello World");
             cells.AddLast("A5");
             Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
@@ -307,7 +307,7 @@ namespace ss
             s.SetCellContents("A6", 22 / 4);
             s.SetCellContents("A7", " ");
             Assert.AreEqual(3, s.SetCellContents("B5", "").Count());
-            Assert.AreEqual(6, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(7, s.GetNamesOfAllNonemptyCells().Count());
             s.SetCellContents("A1", new Formula("4"));
             s.SetCellContents("A3", "Hello World");
             s.SetCellContents("A7", 12.4);
@@ -321,7 +321,7 @@ namespace ss
             s.SetCellContents("A6", "");
             s.SetCellContents("A7", " ");
             Assert.AreEqual("B5", s.SetCellContents("B5", " ").First());
-            Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(4, s.GetNamesOfAllNonemptyCells().Count());
         }
     }
 }
