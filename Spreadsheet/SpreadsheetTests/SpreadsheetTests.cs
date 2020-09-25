@@ -292,5 +292,36 @@ namespace ss
             Assert.AreEqual(3, graph.Count());
 
         }
+        /// <summary>
+        /// Stress tests the spreadsheet
+        /// </summary>
+        [TestMethod]
+        public void StressTest()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A5", new Formula("B5-4"));            
+            s.SetCellContents("A1", new Formula("B2+1"));
+            s.SetCellContents("A3", new Formula("B5/6"));
+            Assert.AreEqual(1,s.SetCellContents("A2", 31.3902).Count());
+            s.SetCellContents("A4", "364 - 31");
+            s.SetCellContents("A6", 22 / 4);
+            s.SetCellContents("A7", " ");
+            Assert.AreEqual(3, s.SetCellContents("B5", "").Count());
+            Assert.AreEqual(6, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetCellContents("A1", new Formula("4"));
+            s.SetCellContents("A3", "Hello World");
+            s.SetCellContents("A7", 12.4);
+            Assert.AreEqual(7, s.GetNamesOfAllNonemptyCells().Count());
+            Assert.AreEqual(2, s.SetCellContents("B5", 39749-27.3).Count());
+            s.SetCellContents("A5","");
+            s.SetCellContents("A1", "");
+            s.SetCellContents("A3"," ");
+            Assert.AreEqual(1, s.SetCellContents("A2", " ").Count());
+            s.SetCellContents("A4", "");
+            s.SetCellContents("A6", "");
+            s.SetCellContents("A7", " ");
+            Assert.AreEqual(1, s.SetCellContents("B5", " ").Count());
+            Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
+        }
     }
 }

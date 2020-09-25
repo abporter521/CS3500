@@ -83,6 +83,10 @@ namespace SS
                 return empty.IsMatch(formula);
             }
 
+            /// <summary>
+            /// Getter method to return the empty bool
+            /// </summary>
+            /// <returns></returns>
             public bool IsEmptyCell ()
             {
                 return empty;
@@ -127,6 +131,7 @@ namespace SS
             //Check if spreadsheet is empty
             if (ss.Count == 0)
                 return new List<string>();
+            //List of all the non-empty cells
             LinkedList<string> cells = new LinkedList<string>();
             //For each cell, add to the list and return
             foreach (string cellNames in ss.Keys)
@@ -153,6 +158,7 @@ namespace SS
         /// </summary>
         public override IList<string> SetCellContents(string name, double number)
         {
+            //Check if name is null or not a valid cell name
             if (name == null || !IsValid(name))
                 throw new InvalidNameException();
             //If cell name is not in the spreadsheet
