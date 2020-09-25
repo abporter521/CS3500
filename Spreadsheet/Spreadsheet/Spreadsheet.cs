@@ -60,7 +60,7 @@ namespace SS
             {
                 this.name = name;
                 formulaContent = formula;
-                if (IsEmptyString(formula) || formula == "")
+                if (formula == "")
                     empty = true;
                 else empty = false;
             }
@@ -72,17 +72,7 @@ namespace SS
             {
                 get => formulaContent;
             }
-            /// <summary>
-            /// Helper to set empty boolean
-            /// </summary>
-            /// <param name="formula"></param>
-            /// <returns></returns>
-            private bool IsEmptyString(string formula)
-            {
-                Regex empty = new Regex("^ +$");
-                return empty.IsMatch(formula);
-            }
-
+            
             /// <summary>
             /// Getter method to return the empty bool
             /// </summary>
