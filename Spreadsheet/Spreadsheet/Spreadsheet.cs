@@ -15,6 +15,9 @@ namespace SS
         Dictionary<string, Cell> ss;
         //dg is a dependency graph that will map dependencies of the cells
         private DependencyGraph dg;
+
+        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+
         /// <summary>
         /// This is a helper class cell to be used in the Spreadsheet class.  
         /// The Cell's purpose is to store the formula and hold data to perform the operations.
@@ -101,7 +104,7 @@ namespace SS
         {
             //Checks if the cell name is a valid variable or is null
             //If so, throws InvalidNameException
-            if (name == null || !IsValid(name))
+            if (name == null || !IsValidVariable(name))
                 throw new InvalidNameException();
             //if the cell does not exist, return an empty string
             if (!ss.ContainsKey(name))
@@ -136,6 +139,47 @@ namespace SS
             }
             return cells;
         }
+        // ADDED FOR PS5
+        /// <summary>
+        /// If content is null, throws an ArgumentNullException.
+        /// 
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, if content parses as a double, the contents of the named
+        /// cell becomes that double.
+        /// 
+        /// Otherwise, if content begins with the character '=', an attempt is made
+        /// to parse the remainder of content into a Formula f using the Formula
+        /// constructor.  There are then three possibilities:
+        /// 
+        ///   (1) If the remainder of content cannot be parsed into a Formula, a 
+        ///       SpreadsheetUtilities.FormulaFormatException is thrown.
+        ///       
+        ///   (2) Otherwise, if changing the contents of the named cell to be f
+        ///       would cause a circular dependency, a CircularException is thrown,
+        ///       and no change is made to the spreadsheet.
+        ///       
+        ///   (3) Otherwise, the contents of the named cell becomes f.
+        /// 
+        /// Otherwise, the contents of the named cell becomes content.
+        /// 
+        /// If an exception is not thrown, the method returns a list consisting of
+        /// name plus the names of all other cells whose value depends, directly
+        /// or indirectly, on the named cell. The order of the list should be any
+        /// order such that if cells are re-evaluated in that order, their dependencies 
+        /// are satisfied by the time they are evaluated.
+        /// 
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// list {A1, B1, C1} is returned.
+        /// </summary>
+        public override IList<string> SetContentsOfCell(string name, string content)
+        {
+            //If content is null, throw exception
+            if (content is null)
+                throw new ArgumentNullException();
+            if (name is null || IsValid(Normalize(name)))
+                throw new InvalidNameException();
+        }
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
@@ -147,10 +191,10 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// list {A1, B1, C1} is returned.
         /// </summary>
-        public override IList<string> SetCellContents(string name, double number)
+        protected override IList<string> SetCellContents(string name, double number)
         {
             //Check if name is null or not a valid cell name
-            if (name == null || !IsValid(name))
+            if (name == null || !IsValidVariable(name))
                 throw new InvalidNameException();
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
@@ -178,13 +222,13 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// list {A1, B1, C1} is returned.
         /// </summary>
-        public override IList<string> SetCellContents(string name, string text)
+        protected override IList<string> SetCellContents(string name, string text)
         {
             //check if text is not null
             if (text is null)
                 throw new ArgumentNullException();
             //If the name is null or has invalid cell name, throw exception
-            if (name is null || !IsValid(name))
+            if (name is null || !IsValidVariable(name))
                 throw new InvalidNameException();
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
@@ -216,13 +260,13 @@ namespace SS
         /// list {A1, B1, C1} is returned.
         /// </summary>
 
-        public override IList<string> SetCellContents(string name, Formula formula)
+        protected override IList<string> SetCellContents(string name, Formula formula)
         {
             //Check if formula is null
             if (formula is null)
                 throw new ArgumentNullException();
             //Check if name is null or valid otherwise throw exception
-            if (name is null || !IsValid(name))
+            if (name is null || !IsValidVariable(name))
                 throw new InvalidNameException();
             //Holds original dependencies of graph and content in case of circular exception
             List<string> originalDependees;
@@ -372,11 +416,26 @@ namespace SS
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        private bool IsValid(string name)
+        private bool IsValidVariable(string name)
         {
-            string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
+            string basicVarPattern = "^[a-zA-Z][0-9]+$";
             Regex varPattern = new Regex(basicVarPattern);
             return varPattern.IsMatch(name);
+        }
+
+        public override string GetSavedVersion(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Save(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetCellValue(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 
