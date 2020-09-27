@@ -315,6 +315,7 @@ namespace SS
         /// </summary>
         protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
         {
+            //Data Types to keep track of changed cells
             LinkedList<String> changed = new LinkedList<String>();
             HashSet<String> visited = new HashSet<String>();
             foreach (String name in names)
