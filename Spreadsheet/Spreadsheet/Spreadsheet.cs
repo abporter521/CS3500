@@ -196,6 +196,7 @@ namespace SS
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            //Return the dependents of the cell
             return allDependents;
         }
         /// <summary>
