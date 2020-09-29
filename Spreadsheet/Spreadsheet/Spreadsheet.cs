@@ -15,8 +15,8 @@ namespace SS
         Dictionary<string, Cell> ss;
         //dg is a dependency graph that will map dependencies of the cells
         private DependencyGraph dg;
-
-        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+        //Is the string containing the file path inputted by user in constructor
+        private string filePath;
 
         /// <summary>
         /// This is a helper class cell to be used in the Spreadsheet class.  
@@ -87,14 +87,40 @@ namespace SS
             }
         }
 
+        //Constructors
         /// <summary>
         /// Constructor of spreadsheet class. Instantiates ss (spreadsheet) and dg (dependency graph)
         /// </summary>
-        public Spreadsheet()
+        public Spreadsheet():base(s=>true, s=>s, "default")
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
         }
+        /// <summary>
+        /// Constructor of spreadsheet class. Gives the user a validator function, normalizer and version string arguments
+        /// </summary>
+        /// <param name="IsValid"></param> Validator function
+        /// <param name="normalizer"></param> Normalizer Function
+        /// <param name="version"></param> Spreadsheet version
+        public Spreadsheet(Func<string, bool> IsValid, Func<string, string> normalizer, string version):base(IsValid, normalizer, version)
+        {
+            ss = new Dictionary<string, Cell>();
+            dg = new DependencyGraph();
+        }
+        /// <summary>
+        /// Constructor of spreadsheet class. Gives the user a filepath, validator function, normalizer and version string arguments
+        /// </summary>
+        /// <param name="IsValid"></param> Validator function
+        /// <param name="normalizer"></param> Normalizer Function
+        /// <param name="version"></param> Spreadsheet version
+        public Spreadsheet(string filePath, Func<string, bool> IsValid, Func<string, string> normalizer, string version)
+            : base(IsValid, normalizer, version)
+        {
+            ss = new Dictionary<string, Cell>();
+            dg = new DependencyGraph();
+            this.filePath = filePath;
+        }
+
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
         /// 
@@ -139,6 +165,8 @@ namespace SS
             }
             return cells;
         }
+
+        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
         // ADDED FOR PS5
         /// <summary>
         /// If content is null, throws an ArgumentNullException.
@@ -179,6 +207,9 @@ namespace SS
                 throw new ArgumentNullException();
             if (name is null || IsValid(Normalize(name)))
                 throw new InvalidNameException();
+            //Check if contents are double, if so, call double version
+            if (Double.TryParse(content, out double number))
+                return SetCellContents(name, number);
         }
 
         /// <summary>
