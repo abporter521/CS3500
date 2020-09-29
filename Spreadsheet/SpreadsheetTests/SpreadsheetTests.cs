@@ -36,7 +36,7 @@ namespace ss
         public void GetCellContentsValidDouble()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", 32.0);
+            s.SetContentsOfCell("A4", "32.0");
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
         }
         /// <summary>
@@ -46,7 +46,7 @@ namespace ss
         public void GetCellContentsValidString()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", "c7+ 2k");
+            s.SetContentsOfCell("A4", "c7+ 2k");
             Assert.AreEqual("c7+ 2k", s.GetCellContents("A4"));
         }
         /// <summary>
@@ -57,7 +57,7 @@ namespace ss
         public void WhitespaceInCellName()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A5 ", "1+1");
+            s.SetContentsOfCell("A5 ", "1+1");
         }
         /// <summary>
         /// Tests cell dependency is correctly created
@@ -66,11 +66,11 @@ namespace ss
         public void ChangeDependencyDouble()
         {
             Spreadsheet s = new Spreadsheet();
-            Assert.AreEqual(1,s.SetCellContents("A4", new Formula("B4+7")).Count());
-            Assert.AreEqual(2,s.SetCellContents("B4", new Formula("C4 + 2")).Count());
-            Assert.AreEqual(3, s.SetCellContents("C4", new Formula("8+2")).Count());
-            s.SetCellContents("B4", 3);
-            Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")).Count());
+            Assert.AreEqual(1,s.SetContentsOfCell("A4", "=B4+7").Count());
+            Assert.AreEqual(2,s.SetContentsOfCell("B4", "=C4 + 2").Count());
+            Assert.AreEqual(3, s.SetContentsOfCell("C4", "=8+2").Count());
+            s.SetContentsOfCell("B4", "3");
+            Assert.AreEqual(1, s.SetContentsOfCell("C4", "=8+2").Count());
         }
        
         /// <summary>
@@ -80,11 +80,11 @@ namespace ss
         public void ChangeDependencyString()
         {
             Spreadsheet s = new Spreadsheet();
-            Assert.AreEqual(1, s.SetCellContents("A4", new Formula("B4+7")).Count());
-            Assert.AreEqual(2, s.SetCellContents("B4", new Formula("C4 + 2")).Count());
-            Assert.AreEqual(3, s.SetCellContents("C4", new Formula("8+2")).Count());
-            s.SetCellContents("B4", "work please");
-            Assert.AreEqual(1, s.SetCellContents("C4", new Formula("8+2")).Count());
+            Assert.AreEqual(1, s.SetContentsOfCell("A4", "=B4+7").Count());
+            Assert.AreEqual(2, s.SetContentsOfCell("B4", "=C4 + 2").Count());
+            Assert.AreEqual(3, s.SetContentsOfCell("C4", "=8+2").Count());
+            s.SetContentsOfCell("B4", "work please");
+            Assert.AreEqual(1, s.SetContentsOfCell("C4", "=8+2").Count());
         }
         /// <summary>
         /// Tests if the method throws exception
@@ -94,7 +94,7 @@ namespace ss
         public void DoubleInvalidName()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents(null, 4);
+            s.SetContentsOfCell(null, "4");
         }
 
         /// <summary>
@@ -106,12 +106,12 @@ namespace ss
         {
             Spreadsheet s = new Spreadsheet();
             Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("A2", "");
-            s.SetCellContents("B2", "  ");
-            s.SetCellContents("C4", "");
-            s.SetCellContents("D4", "      ");
+            s.SetContentsOfCell("A2", "");
+            s.SetContentsOfCell("B2", "  ");
+            s.SetContentsOfCell("C4", "");
+            s.SetContentsOfCell("D4", "      ");
             Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("C4", "Hope this Works");
+            s.SetContentsOfCell("C4", "Hope this Works");
             Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
         }
         /// <summary>
@@ -122,9 +122,9 @@ namespace ss
         public void ChangeAndGetCellContents()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", 32.0);
+            s.SetContentsOfCell("A4", "32.0");
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
-            s.SetCellContents("A4", " ");
+            s.SetContentsOfCell("A4", " ");
             Assert.AreEqual(" ", s.GetCellContents("A4"));
         }
         /// <summary>
@@ -134,7 +134,7 @@ namespace ss
         public void GetCellContentsValidFormula()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("B4+7"));
+            s.SetContentsOfCell("A4", "=B4+7");
             Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
         }
         /// <summary>
@@ -145,7 +145,7 @@ namespace ss
         public void GetCellContentsFormulaCircular()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("A4+7"));        
+            s.SetContentsOfCell("A4", "=A4+7");        
         }
         /// <summary>
         /// Tests return is CircularException for spreadsheet originally not cyclical
@@ -156,11 +156,11 @@ namespace ss
         public void GetCellContentsFormulaCreateCircularException()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("B4+7"));
-            s.SetCellContents("B4", new Formula("C4 -1"));
-            s.SetCellContents("C4", new Formula("8+2"));
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("B4", "=C4 -1");
+            s.SetContentsOfCell("C4", "=8+2");
             Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("B4", new Formula("A4/2"));
+            s.SetContentsOfCell("B4", "=A4/2");
         }
         /// <summary>
         /// Tests return is CircularException for cell with circular dependency
@@ -170,9 +170,9 @@ namespace ss
         public void GetCellContentsFormulaCircularThreeElements()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("B4+7"));
-            s.SetCellContents("B4", new Formula("C4 -1"));
-            s.SetCellContents("C4", new Formula("A4+2"));           
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("B4", "=C4 -1");
+            s.SetContentsOfCell("C4", "=A4+2");           
         }
         /// <summary>
         /// Given a valid dependency graph, if I change one in the middle,
@@ -182,11 +182,11 @@ namespace ss
         public void DependencyChange()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A4", new Formula("B4+7"));
-            s.SetCellContents("B4", new Formula("C4 -1"));
-            s.SetCellContents("C4", new Formula("8+2"));
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("B4", "=C4 -1");
+            s.SetContentsOfCell("C4", "=8+2");
             Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("B4", new Formula("8/2"));
+            s.SetContentsOfCell("B4", "=8/2");
             Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
 
         }
@@ -198,7 +198,7 @@ namespace ss
         public void ExceptionNullName()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents(null, new Formula("A4+7"));
+            s.SetContentsOfCell(null, "=A4+7");
         }
         /// <summary>
         /// Tests return is exception for null
@@ -208,7 +208,7 @@ namespace ss
         public void ExceptionNullCell()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A5", "5-b2");
+            s.SetContentsOfCell("A5", "5-b2");
             s.GetCellContents(null);
         }
 
@@ -221,7 +221,7 @@ namespace ss
         public void ExceptionInvalidCell()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("_A5", "5-b2");
+            s.SetContentsOfCell("_A5", "5-b2");
             Assert.AreEqual("5-b2", s.GetCellContents("_A5"));
             s.GetCellContents("5_V");
         }
@@ -234,7 +234,7 @@ namespace ss
         public void FormulaContentInvalid()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("_1", new Formula("$2 + 1"));
+            s.SetContentsOfCell("_1", "=$2 + 1");
         }
         /// <summary>
         /// Tests if all the nonempty cells are returned
@@ -243,9 +243,9 @@ namespace ss
         public void TestGetAllNamesOfNonEmptyCells()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A5", "5-b2");
-            s.SetCellContents("A1", new Formula("3+1"));
-            s.SetCellContents("c17", 12d);
+            s.SetContentsOfCell("A5", "5-b2");
+            s.SetContentsOfCell("A1", "=3+1");
+            s.SetContentsOfCell("c17", "12.0");
             LinkedList<string> cells = new LinkedList<string>();
             cells.AddLast("c17");
             cells.AddLast("A1");
@@ -261,19 +261,19 @@ namespace ss
         public void TestGetAllNamesOfNonEmptyCellsWithEmptyCell()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A5", "");
-            s.SetCellContents("A1", new Formula("3+1"));
-            s.SetCellContents("c17", 12d);
+            s.SetContentsOfCell("A5", "");
+            s.SetContentsOfCell("A1", "=3+1");
+            s.SetContentsOfCell("c17", "12.0");
             Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
             LinkedList<string> cells = new LinkedList<string>();
             cells.AddLast("c17");
             cells.AddLast("A1");
-            s.SetCellContents("A5", " ");
+            s.SetContentsOfCell("A5", " ");
             Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("A5", "hello World");
+            s.SetContentsOfCell("A5", "hello World");
             cells.AddLast("A5");
             Assert.AreEqual(3, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("A5", "");
+            s.SetContentsOfCell("A5", "");
             Assert.AreEqual(2, s.GetNamesOfAllNonemptyCells().Count());
         }
         /// <summary>
@@ -284,11 +284,11 @@ namespace ss
         {
             IList<string> graph;
             Spreadsheet s = new Spreadsheet();
-            graph = s.SetCellContents("A5", new Formula("B5-4"));
+            graph = s.SetContentsOfCell("A5", "=B5-4");
             Assert.IsTrue(graph.Count() == 1);
-            s.SetCellContents("A1", new Formula("B2+1"));
-            s.SetCellContents("A3", new Formula("B5/6"));
-            graph = s.SetCellContents("B5", 8);
+            s.SetContentsOfCell("A1", "=B2+1");
+            s.SetContentsOfCell("A3", "=B5/6");
+            graph = s.SetContentsOfCell("B5", "8");
             Assert.AreEqual(3, graph.Count());
 
         }
@@ -299,28 +299,28 @@ namespace ss
         public void StressTest()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetCellContents("A5", new Formula("B5-4"));            
-            s.SetCellContents("A1", new Formula("B2+1"));
-            s.SetCellContents("A3", new Formula("B5/6"));
-            Assert.AreEqual(1,s.SetCellContents("A2", 31.3902).Count());
-            s.SetCellContents("A4", "364 - 31");
-            s.SetCellContents("A6", 22 / 4);
-            s.SetCellContents("A7", " ");
-            Assert.AreEqual(3, s.SetCellContents("B5", "").Count());
+            s.SetContentsOfCell("A5", "=B5-4");            
+            s.SetContentsOfCell("A1", "=B2+1");
+            s.SetContentsOfCell("A3", "=B5/6");
+            Assert.AreEqual(1,s.SetContentsOfCell("A2", "31.3902").Count());
+            s.SetContentsOfCell("A4", "364 - 31");
+            s.SetContentsOfCell("A6", "22 / 4");
+            s.SetContentsOfCell("A7", " ");
+            Assert.AreEqual(3, s.SetContentsOfCell("B5", "").Count());
             Assert.AreEqual(7, s.GetNamesOfAllNonemptyCells().Count());
-            s.SetCellContents("A1", new Formula("4"));
-            s.SetCellContents("A3", "Hello World");
-            s.SetCellContents("A7", 12.4);
+            s.SetContentsOfCell("A1", "=4");
+            s.SetContentsOfCell("A3", "Hello World");
+            s.SetContentsOfCell("A7", "12.4");
             Assert.AreEqual(7, s.GetNamesOfAllNonemptyCells().Count());
-            Assert.AreEqual(2, s.SetCellContents("B5", 39749-27.3).Count());
-            s.SetCellContents("A5","");
-            s.SetCellContents("A1", "");
-            s.SetCellContents("A3"," ");
-            Assert.AreEqual(1, s.SetCellContents("A2", " ").Count());
-            s.SetCellContents("A4", "");
-            s.SetCellContents("A6", "");
-            s.SetCellContents("A7", " ");
-            Assert.AreEqual("B5", s.SetCellContents("B5", " ").First());
+            Assert.AreEqual(2, s.SetContentsOfCell("B5", "39749-27.3").Count());
+            s.SetContentsOfCell("A5","");
+            s.SetContentsOfCell("A1", "");
+            s.SetContentsOfCell("A3"," ");
+            Assert.AreEqual(1, s.SetContentsOfCell("A2", " ").Count());
+            s.SetContentsOfCell("A4", "");
+            s.SetContentsOfCell("A6", "");
+            s.SetContentsOfCell("A7", " ");
+            Assert.AreEqual("B5", s.SetContentsOfCell("B5", " ").First());
             Assert.AreEqual(4, s.GetNamesOfAllNonemptyCells().Count());
         }
     }
