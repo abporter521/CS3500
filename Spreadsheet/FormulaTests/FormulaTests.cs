@@ -64,6 +64,13 @@ namespace FormulaTests
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
+        public void FormulaIsEmptyEmpty()
+        {
+            Formula f = new Formula("");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void BasicVariableNameError()
         {
             Formula f = new Formula("6A + 7");
