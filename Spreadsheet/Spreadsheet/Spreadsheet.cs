@@ -17,6 +17,7 @@ namespace SS
         private DependencyGraph dg;
         //Is the string containing the file path inputted by user in constructor
         private string filePath;
+        //Storing my delgates        
 
         /// <summary>
         /// This is a helper class cell to be used in the Spreadsheet class.  
@@ -76,6 +77,18 @@ namespace SS
             {
                 get => formulaContent;
             }
+            /// <summary>
+            /// Getter/Setter method for a cell's value.  Cell value can be
+            /// a double or a FormulaError
+            /// </summary>
+            public object CellValue
+            {
+                get => value;
+                set
+                {
+                    this.value = value;
+                }
+            }
             
             /// <summary>
             /// Getter method to return the empty bool
@@ -95,6 +108,9 @@ namespace SS
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
+            IsValid = s => true;
+            Normalize = s => s;
+            Version = "default";
         }
         /// <summary>
         /// Constructor of spreadsheet class. Gives the user a validator function, normalizer and version string arguments
@@ -102,10 +118,13 @@ namespace SS
         /// <param name="IsValid"></param> Validator function
         /// <param name="normalizer"></param> Normalizer Function
         /// <param name="version"></param> Spreadsheet version
-        public Spreadsheet(Func<string, bool> IsValid, Func<string, string> normalizer, string version):base(IsValid, normalizer, version)
+        public Spreadsheet(Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version):base(IsValidFunc, normalizer, version)
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
+            IsValid = IsValidFunc;
+            Normalize = normalizer;
+            Version = version;
         }
         /// <summary>
         /// Constructor of spreadsheet class. Gives the user a filepath, validator function, normalizer and version string arguments
@@ -113,12 +132,15 @@ namespace SS
         /// <param name="IsValid"></param> Validator function
         /// <param name="normalizer"></param> Normalizer Function
         /// <param name="version"></param> Spreadsheet version
-        public Spreadsheet(string filePath, Func<string, bool> IsValid, Func<string, string> normalizer, string version)
-            : base(IsValid, normalizer, version)
+        public Spreadsheet(string filePath, Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version)
+            : base(IsValidFunc, normalizer, version)
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
             this.filePath = filePath;
+            IsValid = IsValidFunc;
+            Normalize = normalizer;
+            Version = version;
         }
 
         /// <summary>
@@ -128,23 +150,27 @@ namespace SS
         /// value should be either a string, a double, or a Formula.
         public override object GetCellContents(string name)
         {
-            //Checks if the cell name is a valid variable or is null
+            //Checks if the cell name is a valid variable or is null 
             //If so, throws InvalidNameException
-            if (name == null || !IsValidVariable(name))
+            if (name == null || !IsValidVariable(Normalize(name)) || !IsValid(Normalize(name)))
                 throw new InvalidNameException();
-            //if the cell does not exist, return an empty string
-            if (!ss.ContainsKey(name))
-                return "";
-            //Check if the cell is empty
-            else if (ss[name].IsEmptyCell())
-                return "";
-            //Return the content of the cell
             else
-                return ss[name].GetFormulaContent;
+            {
+                //if the cell does not exist, return an empty string
+                if (!ss.ContainsKey(Normalize(name)))
+                    return "";
+                //Check if the cell is empty
+                else if (ss[Normalize(name)].IsEmptyCell())
+                    return "";
+                //Return the content of the cell
+                else
+                    return ss[Normalize(name)].GetFormulaContent;
+            }
         }
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet.
+        /// Assumes all variables in the spreadsheet are normalized
         /// </summary>
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
@@ -205,16 +231,27 @@ namespace SS
             //If content is null, throw exception
             if (content is null)
                 throw new ArgumentNullException();
-            if (name is null || IsValid(Normalize(name)))
+            //Check that name is valid variable and is not null
+            if (name is null || !IsValid(Normalize(name)) || !IsValidVariable(Normalize(name)))
                 throw new InvalidNameException();
-            //Check if contents are double, if so, call double version
+            
+            //Check if contents are double, if so, call double version of SetCellContents
             if (Double.TryParse(content, out double number))
-                return SetCellContents(name, number);
+                return SetCellContents(Normalize(name), number);
+            //If content is a formula, designated with "=" at beginning, then try to add formula to spreadsheet
+            if (content.StartsWith("="))
+            {
+                //Gets the string after the formula
+                string possibleFormula = content.Substring(1);
+                //Return the formula version of SetCellContents
+                return SetCellContents(Normalize(name), new Formula(possibleFormula, Normalize, IsValid));
+            }
+            //Content must be of string type, run string version of SetCellContents
+            else
+                return SetCellContents(Normalize(name), content);
         }
 
         /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
-        /// 
         /// Otherwise, the contents of the named cell becomes number.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
@@ -224,28 +261,26 @@ namespace SS
         /// </summary>
         protected override IList<string> SetCellContents(string name, double number)
         {
-            //Check if name is null or not a valid cell name
-            if (name == null || !IsValidVariable(name))
-                throw new InvalidNameException();
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, number));
+           
             //Else get the cell, update its contents and print the list
             else
                 ss[name] = new Cell(name, number);
+           
+            //Store value of cell as number
+            ss[name].CellValue = number;
             //Name no longer depends on cells because its content is a double, so remove
             foreach (string dependee in dg.GetDependees(name).ToList())
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            
             return allDependents;
         }
 
         /// <summary>
-        /// If text is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
-        /// 
         /// Otherwise, the contents of the named cell becomes text.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
@@ -255,18 +290,14 @@ namespace SS
         /// </summary>
         protected override IList<string> SetCellContents(string name, string text)
         {
-            //check if text is not null
-            if (text is null)
-                throw new ArgumentNullException();
-            //If the name is null or has invalid cell name, throw exception
-            if (name is null || !IsValidVariable(name))
-                throw new InvalidNameException();
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, text));
             //Else get the cell, update its contents
             else
                 ss[name] = new Cell(name, text);
+            //Plug in value of string to cell
+            ss[name].CellValue = new Formula(text, Normalize, IsValid).Evaluate(CellLookup);
             //Name no longer depends on cells because its content is a string, so remove
             foreach (string dependee in dg.GetDependees(name).ToList())
                 dg.RemoveDependency(dependee, name);
@@ -276,10 +307,6 @@ namespace SS
             return allDependents;
         }
         /// <summary>
-        /// If the formula parameter is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
-        /// 
         /// Otherwise, if changing the contents of the named cell to be the formula would cause a 
         /// circular dependency, throws a CircularException, and no change is made to the spreadsheet.
         /// 
@@ -293,15 +320,10 @@ namespace SS
 
         protected override IList<string> SetCellContents(string name, Formula formula)
         {
-            //Check if formula is null
-            if (formula is null)
-                throw new ArgumentNullException();
-            //Check if name is null or valid otherwise throw exception
-            if (name is null || !IsValidVariable(name))
-                throw new InvalidNameException();
             //Holds original dependencies of graph and content in case of circular exception
             List<string> originalDependees;
             Cell originalContent;
+            Object originalValue;
             //If cell name is not in the spreadsheet, add name to spreadsheet
             if (!ss.ContainsKey(name))
             {
@@ -309,6 +331,8 @@ namespace SS
                 originalDependees = new List<string>();
                 //No original content, so cell is empty
                 originalContent = new Cell(name,"");
+                //No original content, so value is empty
+                originalValue = "";
                 //Add Cell to list
                 ss.Add(name, new Cell(name, formula));
             }
@@ -319,8 +343,12 @@ namespace SS
                 originalDependees = dg.GetDependees(name).ToList();
                 //stores the original cell
                 originalContent = ss[name];
+                //stores original value of cell
+                originalValue = ss[name].CellValue;
                 //Set new formula as cell content
                 ss[name] = new Cell(name, formula);
+                //Set new cell value
+                ss[name].CellValue = formula.Evaluate(CellLookup);
             }
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
@@ -338,6 +366,8 @@ namespace SS
                 dg.ReplaceDependees(name, originalDependees);
                 //Revert cell to original content
                 ss[name] = originalContent;
+                //Revert cell value to original value
+                ss[name].CellValue = originalValue;
                 //throw exception
                 throw new CircularException();
             }
@@ -441,7 +471,26 @@ namespace SS
             //Add cell to the beginning of the changed list
             changed.AddFirst(name);
         }
-
+        /// <summary>
+        /// Lookup method used in evaluating formula objects.
+        /// This method will check if the variable exists withing the spreadsheet.
+        /// If the variable does not exist, it is undefined and will throw
+        /// and ArgumentException.
+        /// </summary>
+        /// <param name="cellName"></param>
+        /// <returns></returns>
+        private double CellLookup(string cellName)
+        {
+            //If the cell does not exist in our spreadsheet (because empty), throw error
+            if (!ss.ContainsKey(cellName))
+                throw new ArgumentException("Dependent Cell does not have value");
+            //If the value of a cell is a FormulaError, we need to throw ArgumentException
+            if (ss[cellName].CellValue is FormulaError)
+                throw new ArgumentException("Dependent Cell has a FormulaError value");
+            //Return the double value associated with cell
+            else
+                return (double) ss[cellName].CellValue;
+        }
         /// <summary>
         /// Helper method to tell whether a cell name is valid or not
         /// </summary>
