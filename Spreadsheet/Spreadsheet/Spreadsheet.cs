@@ -3,8 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace SS
 {
@@ -541,9 +543,74 @@ namespace SS
             throw new NotImplementedException();
         }
 
+        // ADDED FOR PS5
+        /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
+        /// 
+        /// <spreadsheet version="version information goes here">
+        /// 
+        /// <cell>
+        /// <name>cell name goes here</name>
+        /// <contents>cell contents goes here</contents>    
+        /// </cell>
+        /// 
+        /// </spreadsheet>
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.  
+        /// If the cell contains a string, it should be written as the contents.  
+        /// If the cell contains a double d, d.ToString() should be written as the contents.  
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// 
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
         public override void Save(string filename)
         {
-            throw new NotImplementedException();
+           
+            XmlWriterSettings setting = new XmlWriterSettings();
+            setting.Indent = true;
+            setting.IndentChars = "  ";
+            
+            using (XmlWriter writer = XmlWriter.Create(filename, setting))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");
+                
+                writer.WriteAttributeString("version", Version);
+
+                foreach (KeyValuePair<string, Cell> cells in ss)
+                {
+                    writer.WriteStartElement("cell");
+                    writer.WriteElementString("name", cells.Key);
+                    //Gets the Cell from the KeyValuePair and if it's a formula, convert to string
+                    if (cells.Value.GetFormulaContent is Formula)
+                    {
+                        //Get the formula
+                        String s = cells.Value.GetFormulaContent.ToString();
+                        //Add an equals to the front
+                        s = s.Insert(0, "=");
+                        //Write it to XML
+                        writer.WriteElementString("contents", s);
+                    }
+                    //If the value of a cell is a double, and we know the content is not a formula by 
+                    //if statement above, we can conclude the content is a double and write it
+                    else if (cells.Value.CellValue is double)
+                        writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
+                    //The content must be a string
+                    else
+                        writer.WriteElementString("content", (string) cells.Value.GetFormulaContent);
+
+                    //closes cell
+                    writer.WriteEndElement();
+                }
+
+                //Ends spreadsheet node
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+            }
+            
+
         }
 
         // ADDED FOR PS5
