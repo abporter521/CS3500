@@ -276,6 +276,8 @@ namespace SS
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            //Recalculate the values of all the dependents
+            RecalculateCells(number, allDependents);
             
             return allDependents;
         }
@@ -303,6 +305,8 @@ namespace SS
                 dg.RemoveDependency(dependee, name);
             //Use GetCellsToRecalculate to return list
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
+            //Update value of dependent cells
+            RecalculateCells(text, allDependents);
             //Return the dependents of the cell
             return allDependents;
         }
@@ -359,6 +363,8 @@ namespace SS
                 List<string> dependents = GetCellsToRecalculate(name).ToList();
                 //Set new cell value
                 ss[name].CellValue = formula.Evaluate(CellLookup);
+                //Update values of dependent cells
+                RecalculateCells(ss[name].CellValue, dependents);
                 //return the list.
                 return dependents; 
             }
@@ -473,6 +479,28 @@ namespace SS
             //Add cell to the beginning of the changed list
             changed.AddFirst(name);
         }
+
+        /// <summary>
+        /// This is a helper method that will recalculate all dependent cells values 
+        /// based on dependees new value
+        /// </summary>
+        /// <param name="value"></param> Dependee's value
+        /// <param name="dpendents"></param> All the dependents that need to update
+        private void RecalculateCells(object value, List<string> dpendents)
+        {
+            //For each dependent in the list
+            foreach (string dependentCell in dpendents)
+            {
+                if (ss[dependentCell].CellValue is string)
+                    continue;
+                if (GetCellContents(dependentCell) is Formula)
+                {
+                    Formula f = (Formula)GetCellContents(dependentCell);
+                    ss[dependentCell].CellValue = f.Evaluate(CellLookup);
+                }
+            }
+
+        }
         /// <summary>
         /// Lookup method used in evaluating formula objects.
         /// This method will check if the variable exists withing the spreadsheet.
@@ -518,9 +546,25 @@ namespace SS
             throw new NotImplementedException();
         }
 
+        // ADDED FOR PS5
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+        /// </summary>
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            //If the name of the variable does not exist or is not a valid variable, throw exception
+            if (name is null || !IsValid(Normalize(name)) || !IsValidVariable(Normalize(name)))
+                throw new InvalidNameException();
+            //Else if the spreadsheet does not contain the cell name => its an empty cell, return empty string
+            else if (!ss.ContainsKey(Normalize(name)))
+                return "";
+            //Else return the contents of the cell
+            else
+                return ss[Normalize(name)].CellValue;
+
         }
     }
 
