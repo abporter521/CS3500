@@ -297,7 +297,7 @@ namespace SS
             else
                 ss[name] = new Cell(name, text);
             //Plug in value of string to cell
-            ss[name].CellValue = new Formula(text, Normalize, IsValid).Evaluate(CellLookup);
+            ss[name].CellValue = text;
             //Name no longer depends on cells because its content is a string, so remove
             foreach (string dependee in dg.GetDependees(name).ToList())
                 dg.RemoveDependency(dependee, name);
@@ -346,9 +346,7 @@ namespace SS
                 //stores original value of cell
                 originalValue = ss[name].CellValue;
                 //Set new formula as cell content
-                ss[name] = new Cell(name, formula);
-                //Set new cell value
-                ss[name].CellValue = formula.Evaluate(CellLookup);
+                ss[name] = new Cell(name, formula);                
             }
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
@@ -357,8 +355,12 @@ namespace SS
             //Use GetCellsToRecalculate to return list or detect CircularException
             try
             {
-                //Will throw exception or return the list.
-                return GetCellsToRecalculate(name).ToList(); 
+                //Detect Circular dependency first, this gets rid of bug if cell calls itself
+                List<string> dependents = GetCellsToRecalculate(name).ToList();
+                //Set new cell value
+                ss[name].CellValue = formula.Evaluate(CellLookup);
+                //return the list.
+                return dependents; 
             }
             catch(CircularException)
             {
@@ -487,9 +489,12 @@ namespace SS
             //If the value of a cell is a FormulaError, we need to throw ArgumentException
             if (ss[cellName].CellValue is FormulaError)
                 throw new ArgumentException("Dependent Cell has a FormulaError value");
+           //If the cell is empty or value is a string, return ArgumentException
+            if (ss[cellName].IsEmptyCell() || ss[cellName].CellValue is string)
+                throw new ArgumentException("Dependent Cell does not have value");
             //Return the double value associated with cell
             else
-                return (double) ss[cellName].CellValue;
+                return (double)ss[cellName].CellValue;
         }
         /// <summary>
         /// Helper method to tell whether a cell name is valid or not
