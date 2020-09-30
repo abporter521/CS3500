@@ -10,12 +10,7 @@ namespace ss
     /// <summary>
     /// This is my test class for PS5
     /// 
-    /// I have not been allowed by the program structure to assign null
-    /// as a cell content for any test. For this reason, there are not
-    /// spreadsheets with null cells but valid cell names. For this coverage is
-    /// not 100%. These lines were kept though to comply with method contracts
-    /// 
-    /// Andrew Porter 22 Sept 2
+    /// Andrew Porter 29 Sept 20
     /// </summary>
     [TestClass]
     public class SpreadsheetTests
@@ -40,7 +35,7 @@ namespace ss
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
         }
         /// <summary>
-        /// Tests return is string for valid cell 
+        /// Tests return is FormulaError object for valid cell 
         /// </summary>
         [TestMethod]
         public void GetCellContentsValidString()
@@ -230,7 +225,7 @@ namespace ss
         /// with a formula object containing invalid formula
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
+        [ExpectedException(typeof(InvalidNameException))]
         public void FormulaContentInvalid()
         {
             Spreadsheet s = new Spreadsheet();
