@@ -61,13 +61,13 @@ namespace ss
         public void ChangeDependencyDouble()
         {
             Spreadsheet s = new Spreadsheet();
-            Assert.AreEqual(1,s.SetContentsOfCell("A4", "=B4+7").Count());
-            Assert.AreEqual(2,s.SetContentsOfCell("B4", "=C4 + 2").Count());
+            Assert.AreEqual(1, s.SetContentsOfCell("A4", "=B4+7").Count());
+            Assert.AreEqual(2, s.SetContentsOfCell("B4", "=C4 + 2").Count());
             Assert.AreEqual(3, s.SetContentsOfCell("C4", "=8+2").Count());
             s.SetContentsOfCell("B4", "3");
             Assert.AreEqual(1, s.SetContentsOfCell("C4", "=8+2").Count());
         }
-       
+
         /// <summary>
         /// Tests cell dependency is correctly created
         /// </summary>
@@ -140,7 +140,7 @@ namespace ss
         public void GetCellContentsFormulaCircular()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("A4", "=A4+7");        
+            s.SetContentsOfCell("A4", "=A4+7");
         }
         /// <summary>
         /// Tests return is CircularException for spreadsheet originally not cyclical
@@ -157,6 +157,35 @@ namespace ss
             Assert.AreEqual(3.0, s.GetNamesOfAllNonemptyCells().Count());
             s.SetContentsOfCell("B4", "=A4/2");
         }
+
+        /// <summary>
+        /// Tests if a cells values are changed when a new cell gets instantiated.
+        /// 
+        /// For Example cells A4 = B4 + 7 and when  the cell is set,
+        /// with store a FormulaError object because B4 does not have value.
+        /// When B4 is instantiated with 10, A4's value should update to 17
+        /// </summary>
+        [TestMethod]
+        public void CellValueUpdatesTest()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.IsTrue(s.GetCellValue("A4") is FormulaError);
+            s.SetContentsOfCell("B4", "5");
+            Assert.AreEqual(12.0, s.GetCellValue("A4"));
+        }
+
+        /// <summary>
+        /// Tests the save method of spreadsheet
+        /// </summary>
+        [TestMethod]
+        public void BasicSaveTest()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("B4", "5");
+            s.Save("test.xml");
+        }
         /// <summary>
         /// Tests return is CircularException for cell with circular dependency
         /// </summary>
@@ -167,7 +196,7 @@ namespace ss
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A4", "=B4+7");
             s.SetContentsOfCell("B4", "=C4 -1");
-            s.SetContentsOfCell("C4", "=A4+2");           
+            s.SetContentsOfCell("C4", "=A4+2");
         }
         /// <summary>
         /// Given a valid dependency graph, if I change one in the middle,
@@ -294,10 +323,10 @@ namespace ss
         public void StressTest()
         {
             Spreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("A5", "=B5-4");            
+            s.SetContentsOfCell("A5", "=B5-4");
             s.SetContentsOfCell("A1", "=B2+1");
             s.SetContentsOfCell("A3", "=B5/6");
-            Assert.AreEqual(1,s.SetContentsOfCell("A2", "31.3902").Count());
+            Assert.AreEqual(1, s.SetContentsOfCell("A2", "31.3902").Count());
             s.SetContentsOfCell("A4", "364 - 31");
             s.SetContentsOfCell("A6", "22 / 4");
             s.SetContentsOfCell("A7", " ");
@@ -308,9 +337,9 @@ namespace ss
             s.SetContentsOfCell("A7", "12.4");
             Assert.AreEqual(7, s.GetNamesOfAllNonemptyCells().Count());
             Assert.AreEqual(2, s.SetContentsOfCell("B5", "39749-27.3").Count());
-            s.SetContentsOfCell("A5","");
+            s.SetContentsOfCell("A5", "");
             s.SetContentsOfCell("A1", "");
-            s.SetContentsOfCell("A3"," ");
+            s.SetContentsOfCell("A3", " ");
             Assert.AreEqual(1, s.SetContentsOfCell("A2", " ").Count());
             s.SetContentsOfCell("A4", "");
             s.SetContentsOfCell("A6", "");
