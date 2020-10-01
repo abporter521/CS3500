@@ -186,6 +186,55 @@ namespace ss
             s.SetContentsOfCell("B4", "5");
             s.Save("test.xml");
         }
+
+        /// <summary>
+        /// Tests the SavedVersion method of spreadsheet
+        /// </summary>
+        [TestMethod]
+        public void BasicSavedVersionTest()
+        {
+            AbstractSpreadsheet s = new Spreadsheet(s=>true, s=>s.ToUpper(),"testerVersion");
+            s.SetContentsOfCell("a4", "=B4+7");
+            s.SetContentsOfCell("B4", "5");
+            s.Save("test.xml");
+            Assert.AreEqual("testerVersion",s.GetSavedVersion("test.xml"));
+
+        }
+        /// <summary>
+        /// Tests for exception with faulty xml file.  
+        /// ErrorTest1 has error of element tags that don't exist. <Error>test</Error>
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void BasicSavedVersionErrorTest()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            Assert.AreEqual("testerVersion", s.GetSavedVersion("errortest1.xml"));
+        }
+
+        /// <summary>
+        /// Tests for exception with faulty xml file.  
+        /// ErrorTest2 has missing end element tags
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void BasicSavedVersionError2Test()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            Assert.AreEqual("testerVersion", s.GetSavedVersion("errortest2.xml"));
+        }
+        /// <summary>
+        /// Tests for exception with faulty xml file.  
+        /// ErrorTest3 has the name of the cell outside the cell block
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void BasicSavedVersionError3Test()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            Assert.AreEqual("testerVersion", s.GetSavedVersion("errortest3.xml"));
+        }
+
         /// <summary>
         /// Tests return is CircularException for cell with circular dependency
         /// </summary>
@@ -215,6 +264,30 @@ namespace ss
 
         }
         /// <summary>
+        /// Check that cell contents return empty
+        /// </summary>
+        [TestMethod]
+        public void ContentChangetoEmpty()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("A4", "");
+            Assert.AreEqual("", s.GetCellContents("A4"));
+
+        }
+        /// <summary>
+        /// Check that cell contents return an exception
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void ContentNull()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("A4", null);
+
+        }
+        /// <summary>
         /// Tests return is throw exception for invalid name 
         /// </summary>
         [TestMethod]
@@ -223,6 +296,16 @@ namespace ss
         {
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell(null, "=A4+7");
+        }
+        /// <summary>
+        /// Test was given in lecture. Tests if invalid file path threw exception
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void SaveThrowTest()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.Save("/some/nonsense/path.xml");   // you would expect this line to throw
         }
         /// <summary>
         /// Tests return is exception for null
@@ -246,8 +329,6 @@ namespace ss
         {
             Spreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("_A5", "5-b2");
-            Assert.AreEqual("5-b2", s.GetCellContents("_A5"));
-            s.GetCellContents("5_V");
         }
         /// <summary>
         /// See what happens when a cell is instantiated
