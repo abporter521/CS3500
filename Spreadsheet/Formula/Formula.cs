@@ -136,6 +136,9 @@ namespace SpreadsheetUtilities
                     //Checks Parenthesis/Operator Following Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && beforeToken == "(")
                         throw new FormulaFormatException("Formula cannot have operator immediately following ( . Try adding a variable or number.");
+                    //Check for double operators
+                    if (beforeToken == "+" || beforeToken == "-" || beforeToken == "*" || beforeToken == "/")
+                        throw new FormulaFormatException("Double operators not allowed");
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
