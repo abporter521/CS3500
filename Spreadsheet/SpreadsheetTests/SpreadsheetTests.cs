@@ -159,6 +159,17 @@ namespace ss
         }
 
         /// <summary>
+        /// Tests return is CircularException for GetSavedVersion
+        /// Errortest4 has a cell that is initialized and then renamed and causes a circular dependency
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void ReadXMLCauseCircularException()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.GetSavedVersion("errortest4.xml");
+        }
+        /// <summary>
         /// Tests if a cells values are changed when a new cell gets instantiated.
         /// 
         /// For Example cells A4 = B4 + 7 and when  the cell is set,
