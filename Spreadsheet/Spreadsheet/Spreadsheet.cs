@@ -19,6 +19,16 @@ namespace SS
         private DependencyGraph dg;
         //Is the string containing the file path inputted by user in constructor
         private string filePath;
+        //Private bool for changed spreadsheet
+        private bool changed;
+
+        // ADDED FOR PS5
+        /// <summary>
+        /// True if this spreadsheet has been modified since it was created or saved                  
+        /// (whichever happened most recently); false otherwise.
+        /// </summary>
+        public override bool Changed { get => this.changed; protected set => changed = value; }
+
         //Storing my delgates        
 
         /// <summary>
@@ -113,6 +123,7 @@ namespace SS
             IsValid = s => true;
             Normalize = s => s;
             Version = "default";
+            Changed = false;
         }
         /// <summary>
         /// Constructor of spreadsheet class. Gives the user a validator function, normalizer and version string arguments
@@ -127,6 +138,7 @@ namespace SS
             IsValid = IsValidFunc;
             Normalize = normalizer;
             Version = version;
+            Changed = false;
         }
         /// <summary>
         /// Constructor of spreadsheet class. Gives the user a filepath, validator function, normalizer and version string arguments
@@ -143,6 +155,7 @@ namespace SS
             IsValid = IsValidFunc;
             Normalize = normalizer;
             Version = version;
+            Changed = false;
         }
 
         /// <summary>
@@ -194,7 +207,6 @@ namespace SS
             return cells;
         }
 
-        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
         // ADDED FOR PS5
         /// <summary>
         /// If content is null, throws an ArgumentNullException.
@@ -280,7 +292,8 @@ namespace SS
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
             //Recalculate the values of all the dependents
             RecalculateCells(number, allDependents);
-            
+            //Spreadsheet has changed, so Change is true;
+            Changed = true;
             return allDependents;
         }
 
@@ -309,6 +322,8 @@ namespace SS
             List<string> allDependents = GetCellsToRecalculate(name).ToList();
             //Update value of dependent cells
             RecalculateCells(text, allDependents);
+            //Change has occured, so Change is true
+            Changed = true;
             //Return the dependents of the cell
             return allDependents;
         }
@@ -367,6 +382,8 @@ namespace SS
                 ss[name].CellValue = formula.Evaluate(CellLookup);
                 //Update values of dependent cells
                 RecalculateCells(ss[name].CellValue, dependents);
+                //Change has occured, so Changed is true
+                Changed = true;
                 //return the list.
                 return dependents; 
             }
@@ -445,6 +462,126 @@ namespace SS
             return changed;
         }
 
+        // ADDED FOR PS5
+        /// <summary>
+        /// Returns the version information of the spreadsheet saved in the named file.
+        /// If there are any problems opening, reading, or closing the file, the method
+        /// should throw a SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        public override string GetSavedVersion(string filename)
+        {
+            string versionData;
+            //throw new ArgumentException();
+            // Create an XmlReader inside this block, and automatically Dispose() it at the end.
+            using (XmlReader reader = XmlReader.Create(filename))
+            {
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "spreadsheet":
+                                versionData = "spreadsheet";
+                                break;
+
+                            case "cell":
+                                string name 
+                        }
+                    }
+                }
+               
+            }
+        }
+
+        // ADDED FOR PS5
+        /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
+        /// 
+        /// <spreadsheet version="version information goes here">
+        /// 
+        /// <cell>
+        /// <name>cell name goes here</name>
+        /// <contents>cell contents goes here</contents>    
+        /// </cell>
+        /// 
+        /// </spreadsheet>
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.  
+        /// If the cell contains a string, it should be written as the contents.  
+        /// If the cell contains a double d, d.ToString() should be written as the contents.  
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// 
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
+        /// </summary>
+        public override void Save(string filename)
+        {
+           
+            XmlWriterSettings setting = new XmlWriterSettings();
+            setting.Indent = true;
+            setting.IndentChars = "  ";
+            
+            using (XmlWriter writer = XmlWriter.Create(filename, setting))
+            {                
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");             
+                writer.WriteAttributeString("version", Version);
+                foreach (KeyValuePair<string, Cell> cells in ss)
+                {
+                    writer.WriteStartElement("cell");
+                    writer.WriteElementString("name", cells.Key);
+                    //Gets the Cell from the KeyValuePair and if it's a formula, convert to string
+                    if (cells.Value.GetFormulaContent is Formula)
+                    {
+                        //Get the formula
+                        String s = cells.Value.GetFormulaContent.ToString();
+                        //Add an equals to the front
+                        s = s.Insert(0, "=");
+                        //Write it to XML
+                        writer.WriteElementString("contents", s);
+                    }
+                    //If the value of a cell is a double, and we know the content is not a formula by 
+                    //if statement above, we can conclude the content is a double and write it
+                    else if (cells.Value.CellValue is double)
+                        writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
+                    //The content must be a string
+                    else
+                        writer.WriteElementString("content", (string) cells.Value.GetFormulaContent);
+
+                    //closes cell
+                    writer.WriteEndElement();
+                }
+
+                //Ends spreadsheet node
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+            }
+            //File is saved, so now Changed is false
+            Changed = false;
+        }
+
+        // ADDED FOR PS5
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        /// 
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
+        /// </summary>
+        public override object GetCellValue(string name)
+        {
+            //If the name of the variable does not exist or is not a valid variable, throw exception
+            if (name is null || !IsValid(Normalize(name)) || !IsValidVariable(Normalize(name)))
+                throw new InvalidNameException();
+            //Else if the spreadsheet does not contain the cell name => its an empty cell, return empty string
+            else if (!ss.ContainsKey(Normalize(name)))
+                return "";
+            //Else return the contents of the cell
+            else
+                return ss[Normalize(name)].CellValue;
+
+        }
 
         /// <summary>
         /// A convenience method for invoking the other version of GetCellsToRecalculate
@@ -454,7 +591,6 @@ namespace SS
         {
             return GetCellsToRecalculate(new HashSet<String>() { name });
         }
-
 
         /// <summary>
         /// A helper for the GetCellsToRecalculate method.
@@ -503,6 +639,7 @@ namespace SS
             }
 
         }
+
         /// <summary>
         /// Lookup method used in evaluating formula objects.
         /// This method will check if the variable exists withing the spreadsheet.
@@ -519,119 +656,26 @@ namespace SS
             //If the value of a cell is a FormulaError, we need to throw ArgumentException
             if (ss[cellName].CellValue is FormulaError)
                 throw new ArgumentException("Dependent Cell has a FormulaError value");
-           //If the cell is empty or value is a string, return ArgumentException
+            //If the cell is empty or value is a string, return ArgumentException
             if (ss[cellName].IsEmptyCell() || ss[cellName].CellValue is string)
                 throw new ArgumentException("Dependent Cell does not have value");
             //Return the double value associated with cell
             else
                 return (double)ss[cellName].CellValue;
         }
+
         /// <summary>
-        /// Helper method to tell whether a cell name is valid or not
+        /// Helper method to tell whether a cell name follows basic variable convention
+        /// One or more letters followed by one or more numbers
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         private bool IsValidVariable(string name)
         {
+            //Set pattern
             string basicVarPattern = "^[a-zA-Z][0-9]+$";
             Regex varPattern = new Regex(basicVarPattern);
             return varPattern.IsMatch(name);
-        }
-
-        public override string GetSavedVersion(string filename)
-        {
-            throw new NotImplementedException();
-        }
-
-        // ADDED FOR PS5
-        /// <summary>
-        /// Writes the contents of this spreadsheet to the named file using an XML format.
-        /// The XML elements should be structured as follows:
-        /// 
-        /// <spreadsheet version="version information goes here">
-        /// 
-        /// <cell>
-        /// <name>cell name goes here</name>
-        /// <contents>cell contents goes here</contents>    
-        /// </cell>
-        /// 
-        /// </spreadsheet>
-        /// 
-        /// There should be one cell element for each non-empty cell in the spreadsheet.  
-        /// If the cell contains a string, it should be written as the contents.  
-        /// If the cell contains a double d, d.ToString() should be written as the contents.  
-        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
-        /// 
-        /// If there are any problems opening, writing, or closing the file, the method should throw a
-        /// SpreadsheetReadWriteException with an explanatory message.
-        /// </summary>
-        public override void Save(string filename)
-        {
-           
-            XmlWriterSettings setting = new XmlWriterSettings();
-            setting.Indent = true;
-            setting.IndentChars = "  ";
-            
-            using (XmlWriter writer = XmlWriter.Create(filename, setting))
-            {
-                writer.WriteStartDocument();
-                writer.WriteStartElement("spreadsheet");
-                
-                writer.WriteAttributeString("version", Version);
-
-                foreach (KeyValuePair<string, Cell> cells in ss)
-                {
-                    writer.WriteStartElement("cell");
-                    writer.WriteElementString("name", cells.Key);
-                    //Gets the Cell from the KeyValuePair and if it's a formula, convert to string
-                    if (cells.Value.GetFormulaContent is Formula)
-                    {
-                        //Get the formula
-                        String s = cells.Value.GetFormulaContent.ToString();
-                        //Add an equals to the front
-                        s = s.Insert(0, "=");
-                        //Write it to XML
-                        writer.WriteElementString("contents", s);
-                    }
-                    //If the value of a cell is a double, and we know the content is not a formula by 
-                    //if statement above, we can conclude the content is a double and write it
-                    else if (cells.Value.CellValue is double)
-                        writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
-                    //The content must be a string
-                    else
-                        writer.WriteElementString("content", (string) cells.Value.GetFormulaContent);
-
-                    //closes cell
-                    writer.WriteEndElement();
-                }
-
-                //Ends spreadsheet node
-                writer.WriteEndElement();
-                writer.WriteEndDocument();
-            }
-            
-
-        }
-
-        // ADDED FOR PS5
-        /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
-        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
-        /// </summary>
-        public override object GetCellValue(string name)
-        {
-            //If the name of the variable does not exist or is not a valid variable, throw exception
-            if (name is null || !IsValid(Normalize(name)) || !IsValidVariable(Normalize(name)))
-                throw new InvalidNameException();
-            //Else if the spreadsheet does not contain the cell name => its an empty cell, return empty string
-            else if (!ss.ContainsKey(Normalize(name)))
-                return "";
-            //Else return the contents of the cell
-            else
-                return ss[Normalize(name)].CellValue;
-
         }
     }
 
