@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -101,12 +102,12 @@ namespace SS
                     this.value = value;
                 }
             }
-            
+
             /// <summary>
             /// Getter method to return the empty bool
             /// </summary>
             /// <returns></returns>
-            public bool IsEmptyCell ()
+            public bool IsEmptyCell()
             {
                 return empty;
             }
@@ -116,7 +117,7 @@ namespace SS
         /// <summary>
         /// Constructor of spreadsheet class. Instantiates ss (spreadsheet) and dg (dependency graph)
         /// </summary>
-        public Spreadsheet():base(s=>true, s=>s, "default")
+        public Spreadsheet() : base(s => true, s => s, "default")
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
@@ -131,7 +132,7 @@ namespace SS
         /// <param name="IsValid"></param> Validator function
         /// <param name="normalizer"></param> Normalizer Function
         /// <param name="version"></param> Spreadsheet version
-        public Spreadsheet(Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version):base(IsValidFunc, normalizer, version)
+        public Spreadsheet(Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version) : base(IsValidFunc, normalizer, version)
         {
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
@@ -248,7 +249,7 @@ namespace SS
             //Check that name is valid variable and is not null
             if (name is null || !IsValid(Normalize(name)) || !IsValidVariable(Normalize(name)))
                 throw new InvalidNameException();
-            
+
             //Check if contents are double, if so, call double version of SetCellContents
             if (Double.TryParse(content, out double number))
                 return SetCellContents(Normalize(name), number);
@@ -278,11 +279,11 @@ namespace SS
             //If cell name is not in the spreadsheet
             if (!ss.ContainsKey(name))
                 ss.Add(name, new Cell(name, number));
-           
+
             //Else get the cell, update its contents and print the list
             else
                 ss[name] = new Cell(name, number);
-           
+
             //Store value of cell as number
             ss[name].CellValue = number;
             //Name no longer depends on cells because its content is a double, so remove
@@ -351,7 +352,7 @@ namespace SS
                 //No original dependees, so new list
                 originalDependees = new List<string>();
                 //No original content, so cell is empty
-                originalContent = new Cell(name,"");
+                originalContent = new Cell(name, "");
                 //No original content, so value is empty
                 originalValue = "";
                 //Add Cell to list
@@ -367,7 +368,7 @@ namespace SS
                 //stores original value of cell
                 originalValue = ss[name].CellValue;
                 //Set new formula as cell content
-                ss[name] = new Cell(name, formula);                
+                ss[name] = new Cell(name, formula);
             }
             //Take out all the variables in the contents
             IList<string> dependees = formula.GetVariables().ToList();
@@ -385,9 +386,9 @@ namespace SS
                 //Change has occured, so Changed is true
                 Changed = true;
                 //return the list.
-                return dependents; 
+                return dependents;
             }
-            catch(CircularException)
+            catch (CircularException)
             {
                 //Revert to original dependency graph
                 dg.ReplaceDependees(name, originalDependees);
@@ -470,27 +471,68 @@ namespace SS
         /// </summary>
         public override string GetSavedVersion(string filename)
         {
-            string versionData;
-            //throw new ArgumentException();
-            // Create an XmlReader inside this block, and automatically Dispose() it at the end.
-            using (XmlReader reader = XmlReader.Create(filename))
-            {
-                while (reader.Read())
-                {
-                    if (reader.IsStartElement())
-                    {
-                        switch (reader.Name)
-                        {
-                            case "spreadsheet":
-                                versionData = "spreadsheet";
-                                break;
+            //string that contains the version data
+            string versionData = "";
+            //string that contains the cell name
+            string name = "";
+            //string to hold cell contents
+            string content;
 
-                            case "cell":
-                                string name 
+            try
+            {
+                // Create an XmlReader inside this block, and automatically Dispose() it at the end.
+                using (XmlReader reader = XmlReader.Create(filename))
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.IsStartElement())
+                        {
+                            switch (reader.Name)
+                            {
+                                //case element is spreadsheet
+                                case "spreadsheet":
+                                    if (reader.HasAttributes)
+                                        versionData = reader.GetAttribute("version");
+                                    else
+                                        throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
+                                    break;
+
+                                //Case where element is cell
+                                case "cell":
+                                    continue;
+                                case "name":
+                                    //Gets name of cell
+                                    name = reader.ReadElementContentAsString();
+                                    break;
+                                case "contents":
+                                    //If name hasn't been assigned by the time we get to content,
+                                    //then the content is missing a cell name
+                                    if (name != null || name != "")
+                                    {
+                                        //Checks if next sibling is content, otherwise throws exception
+                                        content = reader.ReadElementContentAsString();
+                                        SetContentsOfCell(name, content);
+                                        name = "";
+                                    }
+                                    else
+                                        throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line");
+                                    break;
+                                //default is that the tag does not match what is needed for a spreadsheet class, so it throws.
+                                default:
+                                    throw new SpreadsheetReadWriteException("Contains tags that are not spreadsheet, cell, or content");
+
+                            }
                         }
+                        else
+                            continue;
                     }
                 }
-               
+                return versionData;
+            }
+            catch (DirectoryNotFoundException)
+            {
+
+                throw new SpreadsheetReadWriteException("Filepath could not be found");
             }
         }
 
@@ -518,45 +560,55 @@ namespace SS
         /// </summary>
         public override void Save(string filename)
         {
-           
+            //Sets up the XML writer settings to indent and character to use when indenting
             XmlWriterSettings setting = new XmlWriterSettings();
             setting.Indent = true;
             setting.IndentChars = "  ";
-            
-            using (XmlWriter writer = XmlWriter.Create(filename, setting))
-            {                
-                writer.WriteStartDocument();
-                writer.WriteStartElement("spreadsheet");             
-                writer.WriteAttributeString("version", Version);
-                foreach (KeyValuePair<string, Cell> cells in ss)
+
+            try
+            {
+                using (XmlWriter writer = XmlWriter.Create(filename, setting))
                 {
-                    writer.WriteStartElement("cell");
-                    writer.WriteElementString("name", cells.Key);
-                    //Gets the Cell from the KeyValuePair and if it's a formula, convert to string
-                    if (cells.Value.GetFormulaContent is Formula)
+                    //Begin document
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("version", Version);
+                    //For each of the cells in the spreadsheet
+                    foreach (KeyValuePair<string, Cell> cells in ss)
                     {
-                        //Get the formula
-                        String s = cells.Value.GetFormulaContent.ToString();
-                        //Add an equals to the front
-                        s = s.Insert(0, "=");
-                        //Write it to XML
-                        writer.WriteElementString("contents", s);
+                        writer.WriteStartElement("cell");
+                        writer.WriteElementString("name", cells.Key);
+                        //Gets the Cell from the KeyValuePair and if it's a formula, convert to string
+                        if (cells.Value.GetFormulaContent is Formula)
+                        {
+                            //Get the formula
+                            String s = cells.Value.GetFormulaContent.ToString();
+                            //Add an equals to the front
+                            s = s.Insert(0, "=");
+                            //Write it to XML
+                            writer.WriteElementString("contents", s);
+                        }
+                        //If the value of a cell is a double, and we know the content is not a formula by 
+                        //if statement above, we can conclude the content is a double and write it
+                        else if (cells.Value.CellValue is double)
+                            writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
+                        //The content must be a string
+                        else
+                            writer.WriteElementString("content", (string)cells.Value.GetFormulaContent);
+
+                        //closes cell
+                        writer.WriteEndElement();
                     }
-                    //If the value of a cell is a double, and we know the content is not a formula by 
-                    //if statement above, we can conclude the content is a double and write it
-                    else if (cells.Value.CellValue is double)
-                        writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
-                    //The content must be a string
-                    else
-                        writer.WriteElementString("content", (string) cells.Value.GetFormulaContent);
 
-                    //closes cell
+                    //Ends spreadsheet node
                     writer.WriteEndElement();
+                    writer.WriteEndDocument();
                 }
+            }
+            catch (Exception)
+            {
 
-                //Ends spreadsheet node
-                writer.WriteEndElement();
-                writer.WriteEndDocument();
+                throw new SpreadsheetReadWriteException("Filepath could not be found");
             }
             //File is saved, so now Changed is false
             Changed = false;
