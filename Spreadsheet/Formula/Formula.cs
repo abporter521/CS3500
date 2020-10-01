@@ -54,7 +54,7 @@ namespace SpreadsheetUtilities
         private Func<string, string> normalizer;
         private Func<string, bool> validator;
         private string[] tokens;
-        private string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]+$";
+        private string basicVarPattern = "^[a-zA-Z_][0-9a-zA-Z_]*$";
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
@@ -136,6 +136,12 @@ namespace SpreadsheetUtilities
                     //Checks Parenthesis/Operator Following Rule
                     if ((token == "+" || token == "-" || token == ")" || token == "*" || token == "/") && beforeToken == "(")
                         throw new FormulaFormatException("Formula cannot have operator immediately following ( . Try adding a variable or number.");
+                    //Check for double operators
+                    if (token == "+" || token == "-" || token == "*" || token == "/")
+                    {
+                        if (beforeToken == "+" || beforeToken == "-" || beforeToken == "*" || beforeToken == "/")
+                            throw new FormulaFormatException("Double operators not allowed");
+                    }
                     //Checks Extra Following Rule
                     if (token == "(")
                     {
@@ -165,19 +171,15 @@ namespace SpreadsheetUtilities
                     placeHolder++;
                     continue;
                 }
-                //If the token matches basic variable format when normalized
-                if (varPattern.IsMatch(normalize(token)))
+                //If the token matches basic variable format and validator when normalized
+                if (varPattern.IsMatch(normalize(token)) && isValid(normalize(token)))
                 {
-                    //Checks if normalized token meets specifications of user's validator
-                    if (isValid(normalize(token)))
-                    {
-                        //Checks Extra Following Rule
-                        if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
-                            throw new FormulaFormatException("Implicit multiplication is not allowed.");
-                        //Save the normalized variable to tokens array
-                        tokens[placeHolder] = normalize(token);
-                        placeHolder++;
-                    }
+                    //Checks Extra Following Rule
+                    if (beforeToken == ")" || varPattern.IsMatch(normalize(beforeToken)) || beforeIsDouble)
+                        throw new FormulaFormatException("Implicit multiplication is not allowed.");
+                    //Save the normalized variable to tokens array
+                    tokens[placeHolder] = normalize(token);
+                    placeHolder++;
                 }
                 //If token goes through all these if statements and does not trigger them, it must be that the token is of an invalid format so throw error
                 else
