@@ -471,6 +471,10 @@ namespace SS
         /// </summary>
         public override string GetSavedVersion(string filename)
         {
+            //booleans to flag that the order and format of the xml file is correct
+            bool inSpreadsheet = false;
+            bool inCell = false;
+
             //string that contains the version data
             string versionData = "";
             //string that contains the cell name
@@ -491,19 +495,36 @@ namespace SS
                             {
                                 //case element is spreadsheet
                                 case "spreadsheet":
+                                    //if the spreadsheet has version attribute, retrieve the data
                                     if (reader.HasAttributes)
                                         versionData = reader.GetAttribute("version");
                                     else
                                         throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
+                                    //Reader is now inside the spreadsheet tags
+                                    inSpreadsheet = true;
                                     break;
 
                                 //Case where element is cell
                                 case "cell":
-                                    continue;
+                                    //Check that cell tag comes inside of spreadsheet
+                                    if (inSpreadsheet)
+                                    {
+                                        inCell = true;
+                                        continue;
+                                    }
+                                    //Enforces proper formatting
+                                    throw new SpreadsheetReadWriteException("Cell is not contained within spreadsheet elements");
                                 case "name":
-                                    //Gets name of cell
-                                    name = reader.ReadElementContentAsString();
-                                    break;
+                                    //Check that name tag is inside cell
+                                    if (inCell)
+                                    {
+                                        //Gets name of cell
+                                        name = reader.ReadElementContentAsString();
+                                        break;
+                                    }
+                                    //throw exception if format is broken
+                                    throw new SpreadsheetReadWriteException("Name of cell is not contained within cell elements");
+
                                 case "contents":
                                     //If name hasn't been assigned by the time we get to content,
                                     //then the content is missing a cell name
@@ -511,11 +532,14 @@ namespace SS
                                     {
                                         //Checks if next sibling is content, otherwise throws exception
                                         content = reader.ReadElementContentAsString();
+                                        //Sets contents of cell and checks for other error like cycles
                                         SetContentsOfCell(name, content);
                                         name = "";
                                     }
+                                    //If the tags do not exist or contents does not come right after the name, throw exception
                                     else
-                                        throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line");
+                                        throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line" +
+                                            "and the name must be within the cell elements");
                                     break;
                                 //default is that the tag does not match what is needed for a spreadsheet class, so it throws.
                                 default:
@@ -524,15 +548,34 @@ namespace SS
                             }
                         }
                         else
+                        {
+                            //Checks the end elements and adjust flags
+                            switch(reader.Name)
+                            {
+                                //In case we have exited a cell element
+                                case "cell":
+                                    inCell = false;
+                                    break;
+                                //Set InSpreadsheet to false if we exit spreadsheet tag
+                                case "spreadsheet":
+                                    inSpreadsheet = false;
+                                    break;
+                            }
                             continue;
+                        }
                     }
                 }
                 return versionData;
             }
+            //If the file was not found
             catch (DirectoryNotFoundException)
             {
-
                 throw new SpreadsheetReadWriteException("Filepath could not be found");
+            }
+            //Throws if there is mismatched tags in the file
+            catch (System.Xml.XmlException)
+            {
+                throw new SpreadsheetReadWriteException("There were mismatched tags or nonXML content in the XML file");
             }
         }
 
