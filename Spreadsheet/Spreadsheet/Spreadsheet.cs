@@ -18,8 +18,6 @@ namespace SS
         Dictionary<string, Cell> ss;
         //dg is a dependency graph that will map dependencies of the cells
         private DependencyGraph dg;
-        //Is the string containing the file path inputted by user in constructor
-        private string filePath;
         //Private bool for changed spreadsheet
         private bool changed;
 
@@ -119,11 +117,11 @@ namespace SS
         /// </summary>
         public Spreadsheet() : base(s => true, s => s, "default")
         {
+            //Instantiate new ss and dg objects
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-            IsValid = s => true;
-            Normalize = s => s;
-            Version = "default";
+            
+            //Set status of changed
             Changed = false;
         }
         /// <summary>
@@ -134,11 +132,15 @@ namespace SS
         /// <param name="version"></param> Spreadsheet version
         public Spreadsheet(Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version) : base(IsValidFunc, normalizer, version)
         {
+            //Quick Check to make sure none of the arguments are null
+            if (IsValidFunc == null || normalizer == null || version == null)
+                throw new ArgumentNullException();
+
+            //Instantiate new ss and dg objects
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-            IsValid = IsValidFunc;
-            Normalize = normalizer;
-            Version = version;
+
+            //Set status of changed
             Changed = false;
         }
         /// <summary>
@@ -150,12 +152,20 @@ namespace SS
         public Spreadsheet(string filePath, Func<string, bool> IsValidFunc, Func<string, string> normalizer, string version)
             : base(IsValidFunc, normalizer, version)
         {
+            //Check that filePath is not null
+            if (filePath == null)
+                throw new SpreadsheetReadWriteException("File path cannot be null");
+            //Quick Check to make sure none of the arguments are null
+            if (IsValidFunc == null || normalizer == null || version == null)
+                throw new ArgumentNullException();
+
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-            this.filePath = filePath;
-            IsValid = IsValidFunc;
-            Normalize = normalizer;
-            Version = version;
+           
+            //Create the spreadsheet from the saved file
+            GetSavedVersion(filePath);
+
+            //Change status of Changed to false
             Changed = false;
         }
 
