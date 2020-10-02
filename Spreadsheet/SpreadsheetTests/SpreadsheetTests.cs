@@ -133,6 +133,72 @@ namespace ss
             Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
         }
         /// <summary>
+        /// Tests the 4 arugment constructor and if the xml file has no version name
+        /// ErrorTest6 has no version name
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void NoVersionName()
+        {
+            Spreadsheet s = new Spreadsheet("test.xml", s=> true, s=>s, "version2" );
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
+            s.GetSavedVersion("errortest6.xml");
+        }
+
+        /// <summary>
+        /// Tests the 4 arugment constructor and if the xml file has no version name
+        /// ErrorTest7 has cell named outside the spreadsheet
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void MisplacedCell()
+        {
+            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s, "version2");
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
+            s.GetSavedVersion("errortest7.xml");
+        }
+        /// <summary>
+        /// Tests the 4 arugment constructor and if the xml file has no version name
+        /// ErrorTest8 has cell named after the contents
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void MisplacedNamedCell()
+        {
+            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
+            s.GetSavedVersion("errortest8.xml");
+        }
+        /// <summary>
+        /// Tests the 4 arugment constructor and if the xml file has no version name
+        /// ErrorTest10 has invalid formula
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void FileHasInvalidFormula()
+        {
+            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
+            s.GetSavedVersion("errortest10.xml");
+        }
+        /// <summary>
+        /// Tests the 4 arugment constructor and if the xml file has no version name
+        /// ErrorTest50 does not exist
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void FileNonExistant()
+        {
+            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
+            s.SetContentsOfCell("A4", "=B4+7");
+            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
+            s.GetSavedVersion("errortest50.xml");
+        }
+        /// <summary>
         /// Tests return is CircularException for cell with circular dependency
         /// </summary>
         [TestMethod]
