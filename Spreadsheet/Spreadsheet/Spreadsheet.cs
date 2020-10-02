@@ -533,7 +533,7 @@ namespace SS
                                 case "contents":
                                     //If name hasn't been assigned by the time we get to content,
                                     //then the content is missing a cell name
-                                    if (name != null || name != "")
+                                    if (name != null && name != "")
                                     {
                                         //Checks if next sibling is content, otherwise throws exception
                                         content = reader.ReadElementContentAsString();
@@ -579,7 +579,7 @@ namespace SS
                 throw new SpreadsheetReadWriteException("Version name does not match the one provided to constructor");
             }
             //If the file was not found
-            catch (DirectoryNotFoundException)
+            catch (System.IO.FileNotFoundException)
             {
                 throw new SpreadsheetReadWriteException("Filepath could not be found");
             }
