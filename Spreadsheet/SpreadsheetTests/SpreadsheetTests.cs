@@ -11,7 +11,9 @@ namespace ss
     /// This is my test class for PS5
     /// Code coverage is 98.44% for my spreadsheet class
     /// Code Coverage also accounts for AbstractSpreadsheet 
-    /// of which I have no way of accessing the getCellstoRecalculate method
+    /// of which I have no way of accessing the methods there like
+    /// getCellstoRecalculate.  So it looks like overall coverage is
+    /// less that 98%
     /// 
     /// Andrew Porter 29 Sept 20
     /// </summary>
