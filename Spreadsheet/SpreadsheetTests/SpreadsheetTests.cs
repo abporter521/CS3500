@@ -271,6 +271,22 @@ namespace ss
             s.SetContentsOfCell("B4", "5");
             Assert.AreEqual(12.0, s.GetCellValue("A4"));
         }
+        /// <summary>
+        /// Tests if a cells values are changed when a new cell gets instantiated.
+        /// 
+        /// For Example cells A4 = B4 + 7 and when  the cell is set,
+        /// with store a FormulaError object because B4 does not have value.
+        /// When B4 is instantiated with 10, A4's value should update to 17
+        /// </summary>
+        [TestMethod]
+        public void CellValueUpdatesTest2()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "B4+7");
+            Assert.AreEqual("B4+7", s.GetCellValue("A4"));
+            s.SetContentsOfCell("B4", "=A4-5");
+            Assert.IsTrue(s.GetCellValue("B4") is FormulaError);
+        }
 
         /// <summary>
         /// Tests the save method of spreadsheet
