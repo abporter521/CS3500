@@ -9,6 +9,9 @@ namespace ss
 {
     /// <summary>
     /// This is my test class for PS5
+    /// Code coverage is 98.44% for my spreadsheet class
+    /// Code Coverage also accounts for AbstractSpreadsheet 
+    /// of which I have no way of accessing the getCellstoRecalculate method
     /// 
     /// Andrew Porter 29 Sept 20
     /// </summary>
@@ -21,7 +24,7 @@ namespace ss
         [TestMethod]
         public void GetCellContents()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             Assert.AreEqual("", s.GetCellContents("A4"));
         }
         /// <summary>
@@ -30,7 +33,7 @@ namespace ss
         [TestMethod]
         public void GetCellContentsValidDouble()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A4", "32.0");
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
         }
@@ -67,7 +70,7 @@ namespace ss
         [TestMethod]
         public void GetCellContentsValidString()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A4", "c7+ 2k");
             Assert.AreEqual("c7+ 2k", s.GetCellContents("A4"));
         }
@@ -78,7 +81,7 @@ namespace ss
         [ExpectedException(typeof(InvalidNameException))]
         public void WhitespaceInCellName()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A5 ", "1+1");
         }
         /// <summary>
@@ -87,7 +90,7 @@ namespace ss
         [TestMethod]
         public void ChangeDependencyDouble()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             Assert.AreEqual(1, s.SetContentsOfCell("A4", "=B4+7").Count());
             Assert.AreEqual(2, s.SetContentsOfCell("B4", "=C4 + 2").Count());
             Assert.AreEqual(3, s.SetContentsOfCell("C4", "=8+2").Count());
@@ -126,7 +129,7 @@ namespace ss
         [TestMethod]
         public void EmptyCellNewSpreadsheet()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             Assert.AreEqual(0, s.GetNamesOfAllNonemptyCells().Count());
             s.SetContentsOfCell("A2", "");
             s.SetContentsOfCell("B2", "  ");
@@ -143,7 +146,7 @@ namespace ss
         [TestMethod]
         public void ChangeAndGetCellContents()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A4", "32.0");
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
             s.SetContentsOfCell("A4", " ");
@@ -526,7 +529,7 @@ namespace ss
         [TestMethod]
         public void StressTest()
         {
-            Spreadsheet s = new Spreadsheet();
+            AbstractSpreadsheet s = new Spreadsheet();
             s.SetContentsOfCell("A5", "=B5-4");
             s.SetContentsOfCell("A1", "=B2+1");
             s.SetContentsOfCell("A3", "=B5/6");
