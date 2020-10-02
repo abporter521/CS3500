@@ -35,6 +35,33 @@ namespace ss
             Assert.AreEqual(32.0, s.GetCellContents("A4"));
         }
         /// <summary>
+        /// Tests return throws for null arguments
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void NullConstructorArguments()
+        {
+            AbstractSpreadsheet s = new Spreadsheet(null, s=>s, "default");
+        }
+        /// <summary>
+        /// Tests return throws for null arguments
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void NullConstructorArguments1()
+        {
+            AbstractSpreadsheet s = new Spreadsheet("test.xml", null, s => s, "default");
+        }
+        /// <summary>
+        /// Tests return throws for null arguments
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void NullConstructorArguments2()
+        {
+            AbstractSpreadsheet s = new Spreadsheet(null, s=>true, s => s, "default");
+        }
+        /// <summary>
         /// Tests return is FormulaError object for valid cell 
         /// </summary>
         [TestMethod]
@@ -140,10 +167,8 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void NoVersionName()
         {
-            Spreadsheet s = new Spreadsheet("test.xml", s=> true, s=>s, "version2" );
-            s.SetContentsOfCell("A4", "=B4+7");
-            Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
-            s.GetSavedVersion("errortest6.xml");
+            Spreadsheet s = new Spreadsheet("errortest6.xml", s=> true, s=>s, " " );
+
         }
 
         /// <summary>
@@ -154,10 +179,8 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void MisplacedCell()
         {
-            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s, "version2");
-            s.SetContentsOfCell("A4", "=B4+7");
-            Assert.AreEqual(new Formula("B4+7"), s.GetCellContents("A4"));
-            s.GetSavedVersion("errortest7.xml");
+            Spreadsheet s = new Spreadsheet("errortest7.xml", s => true, s => s, "version2");
+
         }
         /// <summary>
         /// Tests the 4 arugment constructor and if the xml file has no version name
@@ -167,10 +190,8 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void MisplacedNamedCell()
         {
-            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
-            s.SetContentsOfCell("A4", "=B4+7");
-            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
-            s.GetSavedVersion("errortest8.xml");
+            Spreadsheet s = new Spreadsheet("errortest8.xml", s => true, s => s.ToLower(), "version2");
+
         }
         /// <summary>
         /// Tests the 4 arugment constructor and if the xml file has no version name
@@ -180,10 +201,7 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void FileHasInvalidFormula()
         {
-            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
-            s.SetContentsOfCell("A4", "=B4+7");
-            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
-            s.GetSavedVersion("errortest10.xml");
+            Spreadsheet s = new Spreadsheet("errortest10.xml", s => true, s => s.ToLower(), "version2");
         }
         /// <summary>
         /// Tests the 4 arugment constructor and if the xml file has no version name
@@ -193,10 +211,7 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void FileNonExistant()
         {
-            Spreadsheet s = new Spreadsheet("test.xml", s => true, s => s.ToLower(), "version2");
-            s.SetContentsOfCell("A4", "=B4+7");
-            Assert.AreEqual(new Formula("b4+7"), s.GetCellContents("A4"));
-            s.GetSavedVersion("errortest50.xml");
+            Spreadsheet s = new Spreadsheet("errortest50.xml", s => true, s => s.ToLower(), "version2");
         }
         /// <summary>
         /// Tests return is CircularException for cell with circular dependency
