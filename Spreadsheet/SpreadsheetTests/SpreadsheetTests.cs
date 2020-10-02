@@ -163,7 +163,7 @@ namespace ss
         /// Errortest4 has a cell that is initialized and then renamed and causes a circular dependency
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(CircularException))]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void ReadXMLCauseCircularException()
         {
             AbstractSpreadsheet s = new Spreadsheet();
@@ -199,21 +199,42 @@ namespace ss
         }
 
         /// <summary>
+        /// Tests the save method of spreadsheet and if the method  throws
+        /// when given a file to read with a different version name
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetSavedVersionVersionTest()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A4", "=B4+7");
+            s.SetContentsOfCell("B4", "5");
+            s.Save("test.xml");
+            s.GetSavedVersion("errortest5.xml");
+        }
+        /// <summary>
         /// Tests the SavedVersion method of spreadsheet
         /// </summary>
         [TestMethod]
         public void BasicSavedVersionTest()
         {
             AbstractSpreadsheet s = new Spreadsheet(s=>true, s=>s.ToUpper(),"testerVersion");
+            Assert.IsFalse(s.Changed);
             s.SetContentsOfCell("a4", "=B4+7");
+            Assert.IsTrue(s.Changed);
             s.SetContentsOfCell("B4", "5");
+            Assert.IsTrue(s.Changed);
+            s.SetContentsOfCell("d3", "hello World");
+            Assert.IsTrue(s.Changed);
             s.Save("test.xml");
+            Assert.IsFalse(s.Changed);
             Assert.AreEqual("testerVersion",s.GetSavedVersion("test.xml"));
 
         }
         /// <summary>
         /// Tests for exception with faulty xml file.  
-        /// ErrorTest1 has error of element tags that don't exist. <Error>test</Error>
+        /// ErrorTest1 has error of element tags that don't exist.
+        /// Example: <Error>test</Error>
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
@@ -314,6 +335,16 @@ namespace ss
         [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void SaveThrowTest()
+        {
+            AbstractSpreadsheet ss = new Spreadsheet();
+            ss.Save("/some/nonsense/path.xml");   // you would expect this line to throw
+        }
+        /// <summary>
+        /// Tests if invalid file path threw exception
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void SavedVersionThrowTest()
         {
             AbstractSpreadsheet ss = new Spreadsheet();
             ss.Save("/some/nonsense/path.xml");   // you would expect this line to throw
@@ -438,6 +469,36 @@ namespace ss
             s.SetContentsOfCell("A7", " ");
             Assert.AreEqual("B5", s.SetContentsOfCell("B5", " ").First());
             Assert.AreEqual(4, s.GetNamesOfAllNonemptyCells().Count());
+        }
+        /// <summary>
+        /// Stress tests the spreadsheet for updated values
+        /// </summary>
+        [TestMethod]
+        public void StressTestValues()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A5", "=B5-4");
+            s.SetContentsOfCell("A1", "=A4+1");
+            s.SetContentsOfCell("A3", "=B5/6");
+            Assert.IsTrue(s.GetCellValue("A3") is FormulaError);
+            Assert.IsTrue(s.GetCellValue("A1") is FormulaError);
+            Assert.AreEqual(1, s.SetContentsOfCell("A2", "31.3902").Count());
+            s.SetContentsOfCell("A4", "=364 - 31");
+            Assert.AreEqual(334.0, s.GetCellValue("A1"));
+            s.SetContentsOfCell("A6", "22 / 4");
+            s.SetContentsOfCell("A7", " ");
+            Assert.AreEqual(3, s.SetContentsOfCell("B5", "84").Count());
+            Assert.AreEqual(8, s.GetNamesOfAllNonemptyCells().Count());
+            s.SetContentsOfCell("A1", "=4");
+            Assert.AreEqual(14.0, s.GetCellValue("A3"));
+            Assert.AreEqual(80.0, s.GetCellValue("A5"));
+            s.SetContentsOfCell("A3", "Hello World");
+            Assert.AreEqual("Hello World", s.GetCellValue("A3"));
+            s.SetContentsOfCell("A7", "12.4");
+            Assert.AreEqual(2, s.SetContentsOfCell("B5", "39749-27.3").Count());
+            Assert.AreEqual(1, s.SetContentsOfCell("A2", " ").Count());
+            Assert.AreEqual("B5", s.SetContentsOfCell("B5", " ").First());
+            Assert.IsTrue(s.GetCellValue("A5") is FormulaError);
         }
     }
 }
