@@ -266,7 +266,7 @@ namespace SS
             //If content is a formula, designated with "=" at beginning, then try to add formula to spreadsheet
             if (content.StartsWith("="))
             {
-                //Gets the string after the formula
+                //Gets the string after the formula =
                 string possibleFormula = content.Substring(1);
                 //Return the formula version of SetCellContents
                 return SetCellContents(Normalize(name), new Formula(possibleFormula, Normalize, IsValid));
@@ -754,13 +754,16 @@ namespace SS
             //For each dependent in the list
             foreach (string dependentCell in dpendents)
             {
+                //If the cell value is a string, it doesn't change so continue
                 if (ss[dependentCell].CellValue is string)
                     continue;
+                //If the value of a cell comes from a formula, update the value
                 if (GetCellContents(dependentCell) is Formula)
                 {
                     Formula f = (Formula)GetCellContents(dependentCell);
                     ss[dependentCell].CellValue = f.Evaluate(CellLookup);
                 }
+                //Cells whose contents are doubles will not change since they have no dependees
             }
 
         }
