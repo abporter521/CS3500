@@ -92,7 +92,7 @@ namespace SS
             }
             /// <summary>
             /// Getter/Setter method for a cell's value.  Cell value can be
-            /// a double or a FormulaError
+            /// a double or a FormulaError, or a string
             /// </summary>
             public object CellValue
             {
@@ -342,7 +342,8 @@ namespace SS
 
         protected override IList<string> SetCellContents(string name, Formula formula)
         {
-            //Holds original dependencies of graph and content in case of circular exception
+            //Holds original dependencies of graph, content, and value in case of circular exception
+            //These values will be used to undo the changes made if circular dependency occurs
             List<string> originalDependees;
             Cell originalContent;
             Object originalValue;
@@ -487,10 +488,13 @@ namespace SS
                 // Create an XmlReader inside this block, and automatically Dispose() it at the end.
                 using (XmlReader reader = XmlReader.Create(filename))
                 {
+                    //Read the element
                     while (reader.Read())
                     {
+                        //If the element is a start element, move foward
                         if (reader.IsStartElement())
                         {
+                            //Check the reader name
                             switch (reader.Name)
                             {
                                 //case element is spreadsheet
@@ -498,6 +502,7 @@ namespace SS
                                     //if the spreadsheet has version attribute, retrieve the data
                                     if (reader.HasAttributes)
                                         versionData = reader.GetAttribute("version");
+                                    //Spreadsheet has no version data, so we throw
                                     else
                                         throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
                                     //Reader is now inside the spreadsheet tags
@@ -541,12 +546,14 @@ namespace SS
                                         throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line" +
                                             "and the name must be within the cell elements");
                                     break;
+                                
                                 //default is that the tag does not match what is needed for a spreadsheet class, so it throws.
                                 default:
                                     throw new SpreadsheetReadWriteException("Contains tags that are not spreadsheet, cell, or content");
 
                             }
                         }
+                        //If the element is not a start element, it must be an end element
                         else
                         {
                             //Checks the end elements and adjust flags
@@ -565,12 +572,25 @@ namespace SS
                         }
                     }
                 }
-                return versionData;
+                //The version of the read file
+                if(versionData == Version)
+                    return versionData;
+                //Per instructions, if read version data doesnt match the parameter, throw
+                throw new SpreadsheetReadWriteException("Version name does not match the one provided to constructor");
             }
             //If the file was not found
             catch (DirectoryNotFoundException)
             {
                 throw new SpreadsheetReadWriteException("Filepath could not be found");
+            }
+            catch(FormulaFormatException)
+            {
+                throw new SpreadsheetReadWriteException("File contained an invalid formula");
+            }
+            //If the read file contains circular dependency
+            catch(CircularException)
+            {
+                throw new SpreadsheetReadWriteException("Circular dependency detected in file");
             }
             //Throws if there is mismatched tags in the file
             catch (System.Xml.XmlException)
@@ -637,7 +657,7 @@ namespace SS
                             writer.WriteElementString("contents", cells.Value.GetFormulaContent.ToString());
                         //The content must be a string
                         else
-                            writer.WriteElementString("content", (string)cells.Value.GetFormulaContent);
+                            writer.WriteElementString("contents", (string)cells.Value.GetFormulaContent);
 
                         //closes cell
                         writer.WriteEndElement();
