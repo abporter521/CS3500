@@ -80,7 +80,7 @@
             this.percentageAmt.Name = "percentageAmt";
             this.percentageAmt.Size = new System.Drawing.Size(185, 27);
             this.percentageAmt.TabIndex = 5;
-            this.percentageAmt.TextChanged += new System.EventHandler(this.billBox_TextChanged);
+            this.percentageAmt.TextChanged += new System.EventHandler(this.percentageAmt_TextChanged);
             // 
             // finishedBill
             // 

@@ -24,7 +24,7 @@ namespace TipCalculator
 
         private  bool UpdateTip()
         {
-            if(!Double.TryParse(billBox.Text, out double unused) || !double.TryParse
+            if(!double.TryParse(billBox.Text, out double unused) || !double.TryParse
                 (tipPercentage.Text, out double unused2))
             {
                 return false;
@@ -39,6 +39,11 @@ namespace TipCalculator
                 finishedBill.Text = (((Convert.ToDouble(billBox.Text) * tip).ToString()));
                 return true;
             }
+        }
+
+        private void percentageAmt_TextChanged(object sender, EventArgs e)
+        {
+            UpdateTip();
         }
     }
 
