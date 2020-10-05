@@ -12,7 +12,7 @@ using System.Xml;
 namespace SS
 {
     public class Spreadsheet : AbstractSpreadsheet
-    {   //YOU ARE IN THE PS5 BRANCH
+    {   //YOU ARE IN THE MASTER BRANCH
 
         //ss is a represents the spreadsheet cells' names and contents
         Dictionary<string, Cell> ss;

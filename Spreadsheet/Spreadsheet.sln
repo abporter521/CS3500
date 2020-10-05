@@ -21,7 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PS2GradeTests", "PS2GradeTe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{010304F1-AF23-4827-9D0B-F5F9FD90DE3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{5117D39B-9A35-481F-B039-4A511FBD183E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{5117D39B-9A35-481F-B039-4A511FBD183E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetGUI", "SpreadsheetGUI\SpreadsheetGUI.csproj", "{A5F11ED7-0952-4D32-B7DA-0155EF55F9B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetPanel", "SpreadsheetPanel\SpreadsheetPanel.csproj", "{7CE34BC0-DEE8-4955-9112-76887043CE12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +73,14 @@ Global
 		{5117D39B-9A35-481F-B039-4A511FBD183E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5117D39B-9A35-481F-B039-4A511FBD183E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5117D39B-9A35-481F-B039-4A511FBD183E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F11ED7-0952-4D32-B7DA-0155EF55F9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F11ED7-0952-4D32-B7DA-0155EF55F9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F11ED7-0952-4D32-B7DA-0155EF55F9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F11ED7-0952-4D32-B7DA-0155EF55F9B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CE34BC0-DEE8-4955-9112-76887043CE12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CE34BC0-DEE8-4955-9112-76887043CE12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CE34BC0-DEE8-4955-9112-76887043CE12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CE34BC0-DEE8-4955-9112-76887043CE12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
