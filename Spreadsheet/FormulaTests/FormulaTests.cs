@@ -543,6 +543,13 @@ namespace FormulaTests
 
         [TestMethod]
         [ExpectedException(typeof(FormulaFormatException))]
+        public void FormulaIsEmptyEmpty()
+        {
+            Formula f = new Formula("");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
         public void BasicVariableNameError()
         {
             Formula f = new Formula("6A + 7");
@@ -892,7 +899,7 @@ namespace FormulaTests
         [TestMethod(), Timeout(5000)]
         [TestCategory("19")]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void TestSingleOperatorFormula()
+        public void TestSingleOperators()
         {
             Formula f = new Formula("+");
         }
@@ -900,7 +907,7 @@ namespace FormulaTests
         [TestMethod(), Timeout(5000)]
         [TestCategory("20")]
         [ExpectedException(typeof(FormulaFormatException))]
-        public void TestExtraOperatorAtEnd()
+        public void TestExtraOperators()
         {
             Formula f = new Formula("2+5+");
         }
