@@ -20,8 +20,6 @@ namespace SS
         private DependencyGraph dg;
         //Private bool for changed spreadsheet
         private bool changed;
-        //Tells when default contstructor was called
-        private bool defaultCon = false;
 
         // ADDED FOR PS5
         /// <summary>
@@ -122,8 +120,6 @@ namespace SS
             //Instantiate new ss and dg objects
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-            //Flag for when default constructor is called
-            defaultCon = true;
             //Set status of changed
             Changed = false;
         }
@@ -158,16 +154,110 @@ namespace SS
             //Check that filePath is not null
             if (filePath == null)
                 throw new SpreadsheetReadWriteException("File path cannot be null");
+            if (File.Exists(filePath) && GetSavedVersion(filePath) != version)
+                throw new SpreadsheetReadWriteException("Version names are not the same");
             //Quick Check to make sure none of the arguments are null
             if (IsValidFunc == null || normalizer == null || version == null)
                 throw new ArgumentNullException();
 
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-           
-            //Create the spreadsheet from the saved file
-            GetSavedVersion(filePath);
 
+            //string that contains the cell name
+            string name = "";
+            //string to hold cell contents
+            string content;
+
+            //Create the spreadsheet from the saved file
+            try
+            {
+                // Create an XmlReader inside this block, and automatically Dispose() it at the end.
+                using (XmlReader reader = XmlReader.Create(filePath))
+                {
+                    //Read the element
+                    while (reader.Read())
+                    {
+                        //If the element is a start element, move foward
+                        if (reader.IsStartElement())
+                        {
+                            //Check the reader name
+                            switch (reader.Name)
+                            {
+                                //case element is spreadsheet
+                                case "spreadsheet":
+                                    //if the spreadsheet has version attribute, retrieve the data
+                                    if (reader.HasAttributes)
+                                    {
+                                        //Check if new spreadsheet is loading a previous one, if so, update version name                                        
+                                        Version = reader.GetAttribute("version");
+                                    }
+                                    //Spreadsheet has no version data, so we throw
+                                    else
+                                        throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
+                                    break;
+                                //Case where element is cell
+                                case "cell":
+                                    continue;
+                                case "name":
+                                    //Gets name of cell
+                                    reader.Read();
+                                    name = reader.Value;
+                                    break;
+                                case "contents":
+                                    //If name hasn't been assigned by the time we get to content,
+                                    //then the content is missing a cell name
+                                    if (name != null && name != "")
+                                    {
+                                        reader.Read();
+                                        //Checks if next sibling is content, otherwise throws exception
+                                        content = reader.Value;
+                                        //Sets contents of cell and checks for other error like cycles
+                                        SetContentsOfCell(name, content);
+                                        name = "";
+                                    }
+                                    //If the tags do not exist or contents does not come right after the name, throw exception
+                                    else
+                                        throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line" +
+                                            "and the name must be within the cell elements");
+                                    break;
+
+                                //default is that the tag does not match what is needed for a spreadsheet class, so it throws.
+                                default:
+                                    throw new SpreadsheetReadWriteException("Contains tags that are not spreadsheet, cell, or content");
+                            }
+                        }
+                        //If the element is not a start element, it must be an end element
+                        else
+                            continue;
+                    }
+                }
+            }
+            //If the file was not found
+            catch (System.IO.FileNotFoundException)
+            {
+                throw new SpreadsheetReadWriteException("Filepath could not be found");
+            }
+            //If the directory was not found
+            catch (System.IO.DirectoryNotFoundException)
+            {
+                throw new SpreadsheetReadWriteException("Directory could not be found");
+            }
+            catch (FormulaFormatException)
+            {
+                throw new SpreadsheetReadWriteException("File contained an invalid formula");
+            }
+            //If the read file contains circular dependency
+            catch (CircularException)
+            {
+                throw new SpreadsheetReadWriteException("Circular dependency detected in file");
+            }
+            //Throws if there is mismatched tags in the file
+            catch (System.Xml.XmlException)
+            {
+                throw new SpreadsheetReadWriteException("There were mismatched tags or nonXML content in the XML file");
+            }
+
+            Version = version;
             //Change status of Changed to false
             Changed = false;
         }
@@ -485,19 +575,7 @@ namespace SS
         /// </summary>
         public override string GetSavedVersion(string filename)
         {
-            //booleans to flag that the order and format of the xml file is correct
-            bool inSpreadsheet = false;
-            bool inCell = false;
-
-            //string that contains the version data
-            string versionData = "";
-            //string that contains the cell name
-            string name = "";
-            //string to hold cell contents
-            string content;
-            //Holds the before version
-            string beforeVersion = Version;
-
+            //Create the spreadsheet from the saved file
             try
             {
                 // Create an XmlReader inside this block, and automatically Dispose() it at the end.
@@ -509,96 +587,25 @@ namespace SS
                         //If the element is a start element, move foward
                         if (reader.IsStartElement())
                         {
-                            //Check the reader name
-                            switch (reader.Name)
-                            {
-                                //case element is spreadsheet
-                                case "spreadsheet":
-                                    //if the spreadsheet has version attribute, retrieve the data
-                                    if (reader.HasAttributes)
-                                    {   
-                                        //Check if new spreadsheet is loading a previous one, if so, update version name
-                                        if (defaultCon && ss.Count == 0)
-                                            Version = reader.GetAttribute("version");
-                                        //Else we assume that a spreadsheet already exists and must match version names
-                                        else if (beforeVersion != reader.GetAttribute("version"))
-                                            //Per instructions, if read version data doesnt match the parameter, throw
-                                            throw new SpreadsheetReadWriteException("Version name does not match the one provided to constructor");
-                                    }
-                                    //Spreadsheet has no version data, so we throw
-                                    else
-                                        throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
-                                    //Reader is now inside the spreadsheet tags
-                                    inSpreadsheet = true;
-                                    break;
-
-                                //Case where element is cell
-                                case "cell":
-                                    //Check that cell tag comes inside of spreadsheet
-                                    if (inSpreadsheet)
-                                    {
-                                        inCell = true;
-                                        continue;
-                                    }
-                                    //Enforces proper formatting
-                                    throw new SpreadsheetReadWriteException("Cell is not contained within spreadsheet elements");
-                                case "name":
-                                    //Check that name tag is inside cell
-                                    if (inCell)
-                                    {
-                                        //Gets name of cell
-                                        name = reader.ReadElementContentAsString();
-                                        break;
-                                    }
-                                    //throw exception if format is broken
-                                    throw new SpreadsheetReadWriteException("Name of cell is not contained within cell elements");
-
-                                case "contents":
-                                    //If name hasn't been assigned by the time we get to content,
-                                    //then the content is missing a cell name
-                                    if (name != null && name != "")
-                                    {
-                                        //Checks if next sibling is content, otherwise throws exception
-                                        content = reader.ReadElementContentAsString();
-                                        //Sets contents of cell and checks for other error like cycles
-                                        SetContentsOfCell(name, content);
-                                        name = "";
-                                    }
-                                    //If the tags do not exist or contents does not come right after the name, throw exception
-                                    else
-                                        throw new SpreadsheetReadWriteException("Name of cell does not exist. Each content line must match with one name line" +
-                                            "and the name must be within the cell elements");
-                                    break;
-                                
-                                //default is that the tag does not match what is needed for a spreadsheet class, so it throws.
-                                default:
-                                    throw new SpreadsheetReadWriteException("Contains tags that are not spreadsheet, cell, or content");
-
-                            }
-                        }
-                        //If the element is not a start element, it must be an end element
-                        else
-                        {
-                            //Checks the end elements and adjust flags
-                            switch(reader.Name)
-                            {
-                                //In case we have exited a cell element
-                                case "cell":
-                                    inCell = false;
-                                    break;
-                                //Set InSpreadsheet to false if we exit spreadsheet tag
-                                case "spreadsheet":
-                                    inSpreadsheet = false;
-                                    break;
-                            }
-                            continue;
+                            if (reader.Name == "spreadsheet")
+                                if (reader.HasAttributes)
+                                {
+                                    //Check if new spreadsheet is loading a previous one, if so, update version name                                        
+                                    return reader.GetAttribute("version");
+                                }
+                                //Spreadsheet has no version data, so we throw
+                                else
+                                    throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
                         }
                     }
+
                 }
-                //The version of the read file
-                //if(versionData == Version)
-                    return Version;
-                
+                throw new SpreadsheetReadWriteException("Does not have a version name");
+            }
+            //If the file does not have elements
+            catch(System.Xml.XmlException)
+            {
+                throw new SpreadsheetReadWriteException("File does not contain proper XML Format");
             }
             //If the file was not found
             catch (System.IO.FileNotFoundException)
@@ -606,23 +613,9 @@ namespace SS
                 throw new SpreadsheetReadWriteException("Filepath could not be found");
             }
             //If the directory was not found
-            catch(System.IO.DirectoryNotFoundException)
+            catch (System.IO.DirectoryNotFoundException)
             {
                 throw new SpreadsheetReadWriteException("Directory could not be found");
-            }
-            catch(FormulaFormatException)
-            {
-                throw new SpreadsheetReadWriteException("File contained an invalid formula");
-            }
-            //If the read file contains circular dependency
-            catch(CircularException)
-            {
-                throw new SpreadsheetReadWriteException("Circular dependency detected in file");
-            }
-            //Throws if there is mismatched tags in the file
-            catch (System.Xml.XmlException)
-            {
-                throw new SpreadsheetReadWriteException("There were mismatched tags or nonXML content in the XML file");
             }
         }
 

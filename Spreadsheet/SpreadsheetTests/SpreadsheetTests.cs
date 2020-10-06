@@ -55,15 +55,6 @@ namespace ss
         /// Tests return throws for null arguments
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void NullConstructorArguments1()
-        {
-            AbstractSpreadsheet s = new Spreadsheet("test.xml", null, s => s, "default");
-        }
-        /// <summary>
-        /// Tests return throws for null arguments
-        /// </summary>
-        [TestMethod]
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void NullConstructorArguments2()
         {
@@ -255,8 +246,7 @@ namespace ss
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void ReadXMLCauseCircularException()
         {
-            AbstractSpreadsheet s = new Spreadsheet();
-            s.GetSavedVersion("errortest4.xml");
+            AbstractSpreadsheet s = new Spreadsheet("errortest4.xml", s=> true, s=>s, "testerVersion");
         }
         /// <summary>
         /// Tests if a cells values are changed when a new cell gets instantiated.
@@ -329,7 +319,6 @@ namespace ss
         /// Example: <Error>test</Error>
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void BasicSavedVersionErrorTest()
         {
             AbstractSpreadsheet s = new Spreadsheet();
@@ -341,7 +330,6 @@ namespace ss
         /// ErrorTest2 has missing end element tags
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void BasicSavedVersionError2Test()
         {
             AbstractSpreadsheet s = new Spreadsheet();
@@ -352,7 +340,6 @@ namespace ss
         /// ErrorTest3 has the name of the cell outside the cell block
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void BasicSavedVersionError3Test()
         {
             AbstractSpreadsheet s = new Spreadsheet();
