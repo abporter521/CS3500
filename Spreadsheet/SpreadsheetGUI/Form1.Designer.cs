@@ -43,6 +43,8 @@
             this.enterButton = new System.Windows.Forms.Button();
             this.savedBox = new System.Windows.Forms.TextBox();
             this.cellSelected = new System.Windows.Forms.TextBox();
+            this.value = new System.Windows.Forms.Label();
+            this.valueBox = new System.Windows.Forms.TextBox();
             this.fileStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -72,7 +74,7 @@
             this.formulaField.Location = new System.Drawing.Point(164, 33);
             this.formulaField.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.formulaField.Name = "formulaField";
-            this.formulaField.Size = new System.Drawing.Size(510, 24);
+            this.formulaField.Size = new System.Drawing.Size(374, 24);
             this.formulaField.TabIndex = 2;
             // 
             // fileStrip
@@ -84,7 +86,7 @@
             this.helpToolStripMenuItem});
             this.fileStrip.Location = new System.Drawing.Point(0, 0);
             this.fileStrip.Name = "fileStrip";
-            this.fileStrip.Size = new System.Drawing.Size(776, 30);
+            this.fileStrip.Size = new System.Drawing.Size(776, 28);
             this.fileStrip.TabIndex = 4;
             this.fileStrip.Text = "menuStrip1";
             // 
@@ -98,7 +100,7 @@
             this.closeToolStripMenuItem1});
             this.fileToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 26);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // saveToolStripMenuItem
@@ -135,7 +137,7 @@
             this.rEADMEDocumentToolStripMenuItem});
             this.helpToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 26);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // additionalFeaturesToolStripMenuItem
@@ -154,7 +156,7 @@
             // 
             this.enterButton.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.enterButton.Font = new System.Drawing.Font("Microsoft YaHei UI", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.enterButton.Location = new System.Drawing.Point(689, 31);
+            this.enterButton.Location = new System.Drawing.Point(544, 29);
             this.enterButton.Name = "enterButton";
             this.enterButton.Size = new System.Drawing.Size(75, 28);
             this.enterButton.TabIndex = 5;
@@ -185,11 +187,31 @@
             this.cellSelected.TabIndex = 7;
             this.cellSelected.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
+            // value
+            // 
+            this.value.AutoSize = true;
+            this.value.Font = new System.Drawing.Font("Monotype Corsiva", 10.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.value.Location = new System.Drawing.Point(625, 33);
+            this.value.Name = "value";
+            this.value.Size = new System.Drawing.Size(56, 22);
+            this.value.TabIndex = 8;
+            this.value.Text = "Value:";
+            // 
+            // valueBox
+            // 
+            this.valueBox.Location = new System.Drawing.Point(687, 33);
+            this.valueBox.Name = "valueBox";
+            this.valueBox.ReadOnly = true;
+            this.valueBox.Size = new System.Drawing.Size(64, 24);
+            this.valueBox.TabIndex = 9;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(776, 468);
+            this.Controls.Add(this.valueBox);
+            this.Controls.Add(this.value);
             this.Controls.Add(this.cellSelected);
             this.Controls.Add(this.savedBox);
             this.Controls.Add(this.enterButton);
@@ -226,6 +248,8 @@
         private System.Windows.Forms.ToolStripMenuItem additionalFeaturesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rEADMEDocumentToolStripMenuItem;
         private System.Windows.Forms.TextBox cellSelected;
+        private System.Windows.Forms.Label value;
+        private System.Windows.Forms.TextBox valueBox;
     }
 }
 

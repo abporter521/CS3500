@@ -13,27 +13,15 @@ namespace SpreadsheetGUI
 {
     public partial class Form1 : Form
     {
-        ///// <summary>
-        ///// This is a private nested class that will control all the
-        ///// changes that will happen to a spreadsheet including
-        ///// method calls
-        ///// </summary>
-        //private class Controller
-        //{
-        //    //Holds a spreadsheet object to keep track of the changes
-        //    AbstractSpreadsheet ss;
-        //    public Controller (Spreadsheet spreadsheet)
-        //    {
-        //        ss = spreadsheet;
-        //    }
-
-        //}
-        SpreadsheetPanel SpreadsheetPanel1= new SpreadsheetPanel();
         
+        SpreadsheetPanel spreadsheetPanel1 = new SpreadsheetPanel();
+        Controller cont;
         public Form1()
         {
             InitializeComponent();
             spreadsheetUI.SelectionChanged += OnSelectionChange;
+            cont = new Controller();
+            //Allows the enter button to push the insert button
             AcceptButton = enterButton;
             //Sets cell indicator
             cellSelected.Text = ("A1");
@@ -41,14 +29,14 @@ namespace SpreadsheetGUI
             formulaField.Focus();
             //Show user no changes have been made
             savedBox.Text = "No changes made.";
-            
+
         }
 
-        private void OnSelectionChange (SpreadsheetPanel ssp)
+        private void OnSelectionChange(SpreadsheetPanel ssp)
         {
             spreadsheetUI.GetSelection(out int col, out int row);
             spreadsheetUI.GetValue(col, row, out string value);
-            
+            cellSelected.Text = cont.DigitToVar(col, row);
             if (value == "")
             {
                 formulaField.Clear();
@@ -67,8 +55,9 @@ namespace SpreadsheetGUI
             spreadsheetUI.SetValue(col, row, formulaField.Text);
             //Put this feature in the saved
             savedBox.Text = "Changes not saved.";
-            if (!spreadsheetUI.SetSelection(col+1, row))
-                spreadsheetUI.SetSelection(0, row+1);
+            //This moves the selected box automatically after hitting the button
+            if (!spreadsheetUI.SetSelection(col + 1, row))
+                spreadsheetUI.SetSelection(0, row + 1);
             OnSelectionChange(spreadsheetUI);
         }
 
