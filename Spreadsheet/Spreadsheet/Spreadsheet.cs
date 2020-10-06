@@ -20,6 +20,8 @@ namespace SS
         private DependencyGraph dg;
         //Private bool for changed spreadsheet
         private bool changed;
+        //Tells when default contstructor was called
+        private bool defaultCon = false;
 
         // ADDED FOR PS5
         /// <summary>
@@ -120,7 +122,8 @@ namespace SS
             //Instantiate new ss and dg objects
             ss = new Dictionary<string, Cell>();
             dg = new DependencyGraph();
-            
+            //Flag for when default constructor is called
+            defaultCon = true;
             //Set status of changed
             Changed = false;
         }
@@ -492,6 +495,8 @@ namespace SS
             string name = "";
             //string to hold cell contents
             string content;
+            //Holds the before version
+            string beforeVersion = Version;
 
             try
             {
@@ -511,7 +516,15 @@ namespace SS
                                 case "spreadsheet":
                                     //if the spreadsheet has version attribute, retrieve the data
                                     if (reader.HasAttributes)
-                                        versionData = reader.GetAttribute("version");
+                                    {   
+                                        //Check if new spreadsheet is loading a previous one, if so, update version name
+                                        if (defaultCon && ss.Count == 0)
+                                            Version = reader.GetAttribute("version");
+                                        //Else we assume that a spreadsheet already exists and must match version names
+                                        else if (beforeVersion != reader.GetAttribute("version"))
+                                            //Per instructions, if read version data doesnt match the parameter, throw
+                                            throw new SpreadsheetReadWriteException("Version name does not match the one provided to constructor");
+                                    }
                                     //Spreadsheet has no version data, so we throw
                                     else
                                         throw new SpreadsheetReadWriteException("Spreadsheet does not have a version name");
@@ -583,15 +596,19 @@ namespace SS
                     }
                 }
                 //The version of the read file
-                if(versionData == Version)
-                    return versionData;
-                //Per instructions, if read version data doesnt match the parameter, throw
-                throw new SpreadsheetReadWriteException("Version name does not match the one provided to constructor");
+                //if(versionData == Version)
+                    return Version;
+                
             }
             //If the file was not found
             catch (System.IO.FileNotFoundException)
             {
                 throw new SpreadsheetReadWriteException("Filepath could not be found");
+            }
+            //If the directory was not found
+            catch(System.IO.DirectoryNotFoundException)
+            {
+                throw new SpreadsheetReadWriteException("Directory could not be found");
             }
             catch(FormulaFormatException)
             {
@@ -801,7 +818,7 @@ namespace SS
         private bool IsValidVariable(string name)
         {
             //Set pattern
-            string basicVarPattern = "^[a-zA-Z][0-9]+$";
+            string basicVarPattern = "^[a-zA-Z]+[0-9]+$";
             Regex varPattern = new Regex(basicVarPattern);
             return varPattern.IsMatch(name);
         }
