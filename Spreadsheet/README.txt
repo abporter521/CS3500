@@ -9,7 +9,8 @@ have been changed, and if those changes have been saved or not.  This requires n
 the user outside of the normal spreadsheet operations that are expected. Message will change when spreadsheet
 is saved or changed.
 
-5 Oct -- I added shortcut keys.  Ctrl + S will save the document.  Ctrl + O will open a new spreadsheet
+5 Oct -- I added shortcut keys.  Ctrl + S will save the document.  Ctrl + O will open file explorer to open a saved
+spreadsheet
 
 PROBLEMS
 
@@ -19,10 +20,20 @@ resized.
 
 DESIGN DECISIONS
 
+6 Oct -- I put a lot of helper methods in my controller class.  The controller class does the variable
+and coordinate conversions and holds all the logic for building the backend spreadsheet.  I am still fuzzy
+on the MVC model type and I am trying my best to separate concerns. 
+
 IMPLEMENTATIONS
+
+6 Oct -- I implemented the form count class from the demo.  This keeps track of the multiple windows open and 
+It is a separate class file within the project.  I have also implemented a controller class that acts as a 
+separator of the spreadsheet logic and the view.
 
 NEXT GOALS
 
 5 Oct -- I would really like to set up a controller object that can help link the spreadsheet logic
 to the UI.  Also need to implement the opening of more than one spreadsheet.  I would like to attach
 the scrollbar to the mousewheel and move between cells with the arrow keys.
+
+6 Oct -- Get the multiple windows to open up saved files and close when needed.  Attach the scroll bar to the mousewheel
