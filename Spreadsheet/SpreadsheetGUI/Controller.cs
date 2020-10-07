@@ -26,9 +26,9 @@ namespace SpreadsheetGUI
         /// <param name="col"></param>
         /// <param name="row"></param>
         /// <param name="contents"></param>
-        public void SetCellContents (int col, int row, string contents)
+        public List<string> SetCellContents (int col, int row, string contents)
         {
-            ss.SetContentsOfCell(DigitToVar(col, row), contents);
+            return ss.SetContentsOfCell(DigitToVar(col, row), contents).ToList();
         }
 
         /// <summary>
@@ -52,6 +52,16 @@ namespace SpreadsheetGUI
         {
             return ss.GetCellValue(DigitToVar(col, row));
         }
+
+        /// <summary>
+        /// Calls the spreadsheet to save
+        /// </summary>
+        /// <param name="filename"></param>
+        public void Save (string filename)
+        {
+            ss.Save(filename);
+        }
+
         /// <summary>
         /// Helper method to convert the numbers refering to cell location, col and row
         /// to a variable name that can be inputted in the spreadsheet.
@@ -67,7 +77,21 @@ namespace SpreadsheetGUI
             s.Append(c);
             //Add to the string the row number
             s.Append(row+1);
+            //Console.WriteLine(s.ToString());
             return s.ToString();
+        }
+        /// <summary>
+        /// Helper method to convert the variables to a cell location, col and row
+        /// to a variable name that can be inputted in the spreadsheet.
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        public void VarToDigit(string variable, out int col, out int row)
+        {
+            col = variable.ElementAt(0)-65;
+            row = Int32.Parse(variable.Substring(1)) -1;
+            //Console.WriteLine(col + ", " + row);
         }
     }
 }
