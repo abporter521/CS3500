@@ -27,13 +27,14 @@ namespace SpreadsheetGUI
             AcceptButton = enterButton;
             //Sets cell indicator
             cellSelected.Text = ("A1");
-            //Puts cursor on formula field
-            formulaField.Focus();
             //Show user no changes have been made
             savedBox.Text = "No changes made.";
 
         }
-
+        /// <summary>
+        /// Triggers when the cell selected changes
+        /// </summary>
+        /// <param name="ssp"></param>
         private void OnSelectionChange(SpreadsheetPanel ssp)
         {
             spreadsheetUI.GetSelection(out int col, out int row);
@@ -48,20 +49,24 @@ namespace SpreadsheetGUI
             }
             else
             {
+                //Puts formula with = into the formula bar
                 if (cont.GetCellContents(col, row) is Formula)
                 {
                     StringBuilder s = new StringBuilder();
                     s.Append("=" + cont.GetCellContents(col, row).ToString());
                     formulaField.Text = s.ToString();
                 }
+                //Otherwise justs puts contents in formula bar
                 else
                     formulaField.Text = cont.GetCellContents(col, row).ToString();
                 formulaField.Focus();
             }
         }
         /// <summary>
-        /// When the user submits the formula into the bar
-        /// the rest of the spreadsheet should change
+        /// Triggered by the enter button on the spreadsheet
+        /// When the user submits valid data into the  formula bar
+        /// the rest of the spreadsheet should change in accordance 
+        /// to the new data
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -86,7 +91,8 @@ namespace SpreadsheetGUI
             }
             catch (Exception)
             {
-                Console.WriteLine("ya messed up");
+                MessageBox.Show("Your formula contained invalid characters.  Please double check" +
+                    " and try again.");
             }
 
             //Put this feature in the saved
@@ -115,6 +121,16 @@ namespace SpreadsheetGUI
         {
             openFile.ShowDialog();
 
+        }
+
+        private void openFile_FileOk(object sender, CancelEventArgs e)
+        {
+            //Open new window wth the spreadsheet
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PS6ApplicationContext.getAppContext().RunForm(new Form1());
         }
     }
 }
