@@ -45,6 +45,8 @@
             this.cellSelected = new System.Windows.Forms.TextBox();
             this.value = new System.Windows.Forms.Label();
             this.valueBox = new System.Windows.Forms.TextBox();
+            this.saveFileWindow = new System.Windows.Forms.SaveFileDialog();
+            this.openFile = new System.Windows.Forms.OpenFileDialog();
             this.fileStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -106,28 +108,29 @@
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.saveToolStripMenuItem.Text = "New";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
             this.closeToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.closeToolStripMenuItem.Text = "Save";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem1
             // 
             this.closeToolStripMenuItem1.Name = "closeToolStripMenuItem1";
-            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(181, 26);
+            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(224, 26);
             this.closeToolStripMenuItem1.Text = "Close";
             // 
             // helpToolStripMenuItem
@@ -205,6 +208,15 @@
             this.valueBox.Size = new System.Drawing.Size(64, 24);
             this.valueBox.TabIndex = 9;
             // 
+            // saveFileWindow
+            // 
+            this.saveFileWindow.DefaultExt = "sprd";
+            this.saveFileWindow.Title = "Save File";
+            // 
+            // openFile
+            // 
+            this.openFile.FileName = "openFileDialog1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
@@ -250,6 +262,8 @@
         private System.Windows.Forms.TextBox cellSelected;
         private System.Windows.Forms.Label value;
         private System.Windows.Forms.TextBox valueBox;
+        private System.Windows.Forms.SaveFileDialog saveFileWindow;
+        private System.Windows.Forms.OpenFileDialog openFile;
     }
 }
 
