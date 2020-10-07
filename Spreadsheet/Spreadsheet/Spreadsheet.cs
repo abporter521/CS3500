@@ -53,7 +53,7 @@ namespace SS
             public Cell(string name, Formula formula)
             {
                 this.name = name;
-                formulaContent = formula;
+                formulaContent = formula; 
                 empty = false;
             }
             /// <summary>
@@ -281,8 +281,8 @@ namespace SS
                 //Check if the cell is empty
                 else if (ss[Normalize(name)].IsEmptyCell())
                     return "";
-                //Return the content of the cell
-                else
+                //Return the content of the formula
+                 else
                     return ss[Normalize(name)].GetFormulaContent;
             }
         }
