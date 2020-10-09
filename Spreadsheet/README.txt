@@ -71,7 +71,8 @@ IMPLEMENTATIONS
 
 6 Oct -- I implemented the form count class from the demo.  This keeps track of the multiple windows open and 
 It is a separate class file within the project.  I have also implemented a controller class that acts as a 
-separator of the spreadsheet logic and the view.
+separator of the spreadsheet logic and the view. There is a box to the left of the formula bar that indicates
+which cell the selector is currently on.
 
 6 Oct -- The assignment was implemented with a helper class called controller.  This acts as a liaison between
 spreadsheet logic and the user interface.  I tried to separate concerns with this using MVC.  My limited understanding
