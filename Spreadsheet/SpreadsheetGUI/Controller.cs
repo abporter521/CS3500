@@ -139,9 +139,9 @@ namespace SpreadsheetGUI
         /// <returns></returns>
         public void VarToDigit(string variable, out int col, out int row)
         {
+            //Convert letter to column variable
             col = variable.ElementAt(0)-65;
             row = Int32.Parse(variable.Substring(1)) -1;
-            //Console.WriteLine(col + ", " + row);
         }
     }
 }

@@ -38,9 +38,14 @@
             this.closeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.additionalFeaturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.goToCellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.savedStatusToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enterKeyMovementToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autosaverToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rEADMEDocumentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fAQsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.whereIsTheHorizontalScrollBarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enterButton = new System.Windows.Forms.Button();
             this.savedBox = new System.Windows.Forms.TextBox();
             this.cellSelected = new System.Windows.Forms.TextBox();
@@ -49,6 +54,11 @@
             this.saveFileWindow = new System.Windows.Forms.SaveFileDialog();
             this.openFile = new System.Windows.Forms.OpenFileDialog();
             this.spreadsheetUI = new SS.SpreadsheetPanel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.cellSetterBox = new System.Windows.Forms.MaskedTextBox();
+            this.autoSaver = new System.ComponentModel.BackgroundWorker();
+            this.autosaverEnabled = new System.Windows.Forms.CheckBox();
+            this.howDoIEnterAFormulaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -140,31 +150,73 @@
             // 
             // additionalFeaturesToolStripMenuItem
             // 
+            this.additionalFeaturesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.goToCellToolStripMenuItem,
+            this.savedStatusToolStripMenuItem,
+            this.enterKeyMovementToolStripMenuItem,
+            this.autosaverToolStripMenuItem});
             this.additionalFeaturesToolStripMenuItem.Name = "additionalFeaturesToolStripMenuItem";
-            this.additionalFeaturesToolStripMenuItem.Size = new System.Drawing.Size(222, 26);
+            this.additionalFeaturesToolStripMenuItem.Size = new System.Drawing.Size(285, 26);
             this.additionalFeaturesToolStripMenuItem.Text = "Additional Features";
+            // 
+            // goToCellToolStripMenuItem
+            // 
+            this.goToCellToolStripMenuItem.Name = "goToCellToolStripMenuItem";
+            this.goToCellToolStripMenuItem.Size = new System.Drawing.Size(229, 26);
+            this.goToCellToolStripMenuItem.Text = "Go To Cell";
+            this.goToCellToolStripMenuItem.Click += new System.EventHandler(this.goToCellToolStripMenuItem_Click);
+            // 
+            // savedStatusToolStripMenuItem
+            // 
+            this.savedStatusToolStripMenuItem.Name = "savedStatusToolStripMenuItem";
+            this.savedStatusToolStripMenuItem.Size = new System.Drawing.Size(229, 26);
+            this.savedStatusToolStripMenuItem.Text = "Saved Status";
+            this.savedStatusToolStripMenuItem.Click += new System.EventHandler(this.savedStatusToolStripMenuItem_Click);
+            // 
+            // enterKeyMovementToolStripMenuItem
+            // 
+            this.enterKeyMovementToolStripMenuItem.Name = "enterKeyMovementToolStripMenuItem";
+            this.enterKeyMovementToolStripMenuItem.Size = new System.Drawing.Size(229, 26);
+            this.enterKeyMovementToolStripMenuItem.Text = "Enter Key Movement";
+            this.enterKeyMovementToolStripMenuItem.Click += new System.EventHandler(this.enterKeyMovementToolStripMenuItem_Click);
+            // 
+            // autosaverToolStripMenuItem
+            // 
+            this.autosaverToolStripMenuItem.Name = "autosaverToolStripMenuItem";
+            this.autosaverToolStripMenuItem.Size = new System.Drawing.Size(229, 26);
+            this.autosaverToolStripMenuItem.Text = "Autosaver";
+            this.autosaverToolStripMenuItem.Click += new System.EventHandler(this.autosaverToolStripMenuItem_Click);
             // 
             // rEADMEDocumentToolStripMenuItem
             // 
             this.rEADMEDocumentToolStripMenuItem.Name = "rEADMEDocumentToolStripMenuItem";
-            this.rEADMEDocumentToolStripMenuItem.Size = new System.Drawing.Size(222, 26);
-            this.rEADMEDocumentToolStripMenuItem.Text = "README document";
+            this.rEADMEDocumentToolStripMenuItem.Size = new System.Drawing.Size(285, 26);
+            this.rEADMEDocumentToolStripMenuItem.Text = "How to use this spreadsheet?";
             this.rEADMEDocumentToolStripMenuItem.Click += new System.EventHandler(this.rEADMEDocumentToolStripMenuItem_Click);
             // 
             // fAQsToolStripMenuItem
             // 
             this.fAQsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.whereIsTheHorizontalScrollBarToolStripMenuItem});
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem,
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem,
+            this.howDoIEnterAFormulaToolStripMenuItem});
             this.fAQsToolStripMenuItem.Name = "fAQsToolStripMenuItem";
-            this.fAQsToolStripMenuItem.Size = new System.Drawing.Size(222, 26);
+            this.fAQsToolStripMenuItem.Size = new System.Drawing.Size(285, 26);
             this.fAQsToolStripMenuItem.Text = "FAQs";
-            this.fAQsToolStripMenuItem.Click += new System.EventHandler(this.fAQsToolStripMenuItem_Click);
             // 
             // whereIsTheHorizontalScrollBarToolStripMenuItem
             // 
             this.whereIsTheHorizontalScrollBarToolStripMenuItem.Name = "whereIsTheHorizontalScrollBarToolStripMenuItem";
-            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Size = new System.Drawing.Size(317, 26);
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Size = new System.Drawing.Size(378, 26);
             this.whereIsTheHorizontalScrollBarToolStripMenuItem.Text = "Where is the horizontal scroll bar?";
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Click += new System.EventHandler(this.whereIsTheHorizontalScrollBarToolStripMenuItem_Click);
+            // 
+            // didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem
+            // 
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem.Name = "didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem";
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem.Size = new System.Drawing.Size(378, 26);
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem.Text = "Did the creator have eye surgery this week?";
+            this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem.Click += new System.EventHandler(this.didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem_Click);
             // 
             // enterButton
             // 
@@ -205,7 +257,7 @@
             // 
             this.value.AutoSize = true;
             this.value.Font = new System.Drawing.Font("Monotype Corsiva", 10.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.value.Location = new System.Drawing.Point(732, 35);
+            this.value.Location = new System.Drawing.Point(745, 33);
             this.value.Name = "value";
             this.value.Size = new System.Drawing.Size(56, 22);
             this.value.TabIndex = 8;
@@ -213,7 +265,7 @@
             // 
             // valueBox
             // 
-            this.valueBox.Location = new System.Drawing.Point(794, 33);
+            this.valueBox.Location = new System.Drawing.Point(807, 31);
             this.valueBox.Name = "valueBox";
             this.valueBox.ReadOnly = true;
             this.valueBox.Size = new System.Drawing.Size(64, 24);
@@ -243,12 +295,58 @@
             this.spreadsheetUI.Size = new System.Drawing.Size(901, 359);
             this.spreadsheetUI.TabIndex = 0;
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Lucida Calligraphy", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(625, 35);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(88, 19);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Go To Cell:";
+            // 
+            // cellSetterBox
+            // 
+            this.cellSetterBox.Location = new System.Drawing.Point(697, 31);
+            this.cellSetterBox.Mask = ">L09";
+            this.cellSetterBox.Name = "cellSetterBox";
+            this.cellSetterBox.PromptChar = '~';
+            this.cellSetterBox.Size = new System.Drawing.Size(26, 24);
+            this.cellSetterBox.TabIndex = 12;
+            // 
+            // autoSaver
+            // 
+            this.autoSaver.DoWork += new System.ComponentModel.DoWorkEventHandler(this.autoSaver_DoWork);
+            this.autoSaver.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.autoSaver_RunWorkerCompleted);
+            // 
+            // autosaverEnabled
+            // 
+            this.autosaverEnabled.AutoSize = true;
+            this.autosaverEnabled.Checked = true;
+            this.autosaverEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autosaverEnabled.Location = new System.Drawing.Point(153, 2);
+            this.autosaverEnabled.Name = "autosaverEnabled";
+            this.autosaverEnabled.Size = new System.Drawing.Size(150, 24);
+            this.autosaverEnabled.TabIndex = 13;
+            this.autosaverEnabled.Text = "Enable AutoSaver";
+            this.autosaverEnabled.UseVisualStyleBackColor = true;
+            // 
+            // howDoIEnterAFormulaToolStripMenuItem
+            // 
+            this.howDoIEnterAFormulaToolStripMenuItem.Name = "howDoIEnterAFormulaToolStripMenuItem";
+            this.howDoIEnterAFormulaToolStripMenuItem.Size = new System.Drawing.Size(378, 26);
+            this.howDoIEnterAFormulaToolStripMenuItem.Text = "How do I enter a formula?";
+            this.howDoIEnterAFormulaToolStripMenuItem.Click += new System.EventHandler(this.howDoIEnterAFormulaToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(913, 446);
+            this.Controls.Add(this.autosaverEnabled);
+            this.Controls.Add(this.cellSetterBox);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.valueBox);
             this.Controls.Add(this.value);
             this.Controls.Add(this.cellSelected);
@@ -294,6 +392,16 @@
         private System.Windows.Forms.OpenFileDialog openFile;
         private System.Windows.Forms.ToolStripMenuItem fAQsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem whereIsTheHorizontalScrollBarToolStripMenuItem;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.MaskedTextBox cellSetterBox;
+        private System.Windows.Forms.ToolStripMenuItem goToCellToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem savedStatusToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem enterKeyMovementToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem didTheCreatorHaveEyeSurgeryThisWeekToolStripMenuItem;
+        private System.ComponentModel.BackgroundWorker autoSaver;
+        private System.Windows.Forms.ToolStripMenuItem autosaverToolStripMenuItem;
+        private System.Windows.Forms.CheckBox autosaverEnabled;
+        private System.Windows.Forms.ToolStripMenuItem howDoIEnterAFormulaToolStripMenuItem;
     }
 }
 
