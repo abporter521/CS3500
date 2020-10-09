@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.spreadsheetUI = new SS.SpreadsheetPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.formulaField = new System.Windows.Forms.TextBox();
             this.fileStrip = new System.Windows.Forms.MenuStrip();
@@ -40,6 +39,8 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.additionalFeaturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rEADMEDocumentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fAQsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enterButton = new System.Windows.Forms.Button();
             this.savedBox = new System.Windows.Forms.TextBox();
             this.cellSelected = new System.Windows.Forms.TextBox();
@@ -47,19 +48,9 @@
             this.valueBox = new System.Windows.Forms.TextBox();
             this.saveFileWindow = new System.Windows.Forms.SaveFileDialog();
             this.openFile = new System.Windows.Forms.OpenFileDialog();
+            this.spreadsheetUI = new SS.SpreadsheetPanel();
             this.fileStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // spreadsheetUI
-            // 
-            this.spreadsheetUI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.spreadsheetUI.Location = new System.Drawing.Point(0, 59);
-            this.spreadsheetUI.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.spreadsheetUI.Name = "spreadsheetUI";
-            this.spreadsheetUI.Size = new System.Drawing.Size(764, 370);
-            this.spreadsheetUI.TabIndex = 0;
             // 
             // label1
             // 
@@ -88,7 +79,7 @@
             this.helpToolStripMenuItem});
             this.fileStrip.Location = new System.Drawing.Point(0, 0);
             this.fileStrip.Name = "fileStrip";
-            this.fileStrip.Size = new System.Drawing.Size(776, 28);
+            this.fileStrip.Size = new System.Drawing.Size(913, 28);
             this.fileStrip.TabIndex = 4;
             this.fileStrip.Text = "menuStrip1";
             // 
@@ -109,7 +100,7 @@
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.saveToolStripMenuItem.Text = "New";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
@@ -117,7 +108,7 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -125,21 +116,23 @@
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
             this.closeToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.closeToolStripMenuItem.Text = "Save";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem1
             // 
             this.closeToolStripMenuItem1.Name = "closeToolStripMenuItem1";
-            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(224, 26);
+            this.closeToolStripMenuItem1.Size = new System.Drawing.Size(181, 26);
             this.closeToolStripMenuItem1.Text = "Close";
+            this.closeToolStripMenuItem1.Click += new System.EventHandler(this.closeToolStripMenuItem1_Click);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.additionalFeaturesToolStripMenuItem,
-            this.rEADMEDocumentToolStripMenuItem});
+            this.rEADMEDocumentToolStripMenuItem,
+            this.fAQsToolStripMenuItem});
             this.helpToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(55, 24);
@@ -156,6 +149,22 @@
             this.rEADMEDocumentToolStripMenuItem.Name = "rEADMEDocumentToolStripMenuItem";
             this.rEADMEDocumentToolStripMenuItem.Size = new System.Drawing.Size(222, 26);
             this.rEADMEDocumentToolStripMenuItem.Text = "README document";
+            this.rEADMEDocumentToolStripMenuItem.Click += new System.EventHandler(this.rEADMEDocumentToolStripMenuItem_Click);
+            // 
+            // fAQsToolStripMenuItem
+            // 
+            this.fAQsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem});
+            this.fAQsToolStripMenuItem.Name = "fAQsToolStripMenuItem";
+            this.fAQsToolStripMenuItem.Size = new System.Drawing.Size(222, 26);
+            this.fAQsToolStripMenuItem.Text = "FAQs";
+            this.fAQsToolStripMenuItem.Click += new System.EventHandler(this.fAQsToolStripMenuItem_Click);
+            // 
+            // whereIsTheHorizontalScrollBarToolStripMenuItem
+            // 
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Name = "whereIsTheHorizontalScrollBarToolStripMenuItem";
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Size = new System.Drawing.Size(317, 26);
+            this.whereIsTheHorizontalScrollBarToolStripMenuItem.Text = "Where is the horizontal scroll bar?";
             // 
             // enterButton
             // 
@@ -176,10 +185,10 @@
             this.savedBox.BackColor = System.Drawing.Color.DarkGreen;
             this.savedBox.Font = new System.Drawing.Font("MS Reference Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.savedBox.ForeColor = System.Drawing.Color.White;
-            this.savedBox.Location = new System.Drawing.Point(3, 436);
+            this.savedBox.Location = new System.Drawing.Point(3, 425);
             this.savedBox.Name = "savedBox";
             this.savedBox.ReadOnly = true;
-            this.savedBox.Size = new System.Drawing.Size(761, 23);
+            this.savedBox.Size = new System.Drawing.Size(898, 23);
             this.savedBox.TabIndex = 6;
             // 
             // cellSelected
@@ -196,7 +205,7 @@
             // 
             this.value.AutoSize = true;
             this.value.Font = new System.Drawing.Font("Monotype Corsiva", 10.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.value.Location = new System.Drawing.Point(625, 33);
+            this.value.Location = new System.Drawing.Point(732, 35);
             this.value.Name = "value";
             this.value.Size = new System.Drawing.Size(56, 22);
             this.value.TabIndex = 8;
@@ -204,7 +213,7 @@
             // 
             // valueBox
             // 
-            this.valueBox.Location = new System.Drawing.Point(687, 33);
+            this.valueBox.Location = new System.Drawing.Point(794, 33);
             this.valueBox.Name = "valueBox";
             this.valueBox.ReadOnly = true;
             this.valueBox.Size = new System.Drawing.Size(64, 24);
@@ -213,18 +222,33 @@
             // saveFileWindow
             // 
             this.saveFileWindow.DefaultExt = "sprd";
+            this.saveFileWindow.FileName = "Spreadsheet1";
+            this.saveFileWindow.Filter = "Spreadsheet(.sprd)|*.sprd";
             this.saveFileWindow.Title = "Save File";
             // 
             // openFile
             // 
-            this.openFile.FileName = "openFileDialog1";
+            this.openFile.FileName = "mySpreadsheet1";
+            this.openFile.Filter = "Spreadsheet (.sprd)|*.sprd|All Files|*.*";
             this.openFile.FileOk += new System.ComponentModel.CancelEventHandler(this.openFile_FileOk);
+            // 
+            // spreadsheetUI
+            // 
+            this.spreadsheetUI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.spreadsheetUI.Location = new System.Drawing.Point(0, 59);
+            this.spreadsheetUI.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.spreadsheetUI.Name = "spreadsheetUI";
+            this.spreadsheetUI.Size = new System.Drawing.Size(901, 359);
+            this.spreadsheetUI.TabIndex = 0;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(776, 468);
+            this.AutoScroll = true;
+            this.ClientSize = new System.Drawing.Size(913, 446);
             this.Controls.Add(this.valueBox);
             this.Controls.Add(this.value);
             this.Controls.Add(this.cellSelected);
@@ -239,6 +263,7 @@
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.fileStrip.ResumeLayout(false);
             this.fileStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -267,6 +292,8 @@
         private System.Windows.Forms.TextBox valueBox;
         private System.Windows.Forms.SaveFileDialog saveFileWindow;
         private System.Windows.Forms.OpenFileDialog openFile;
+        private System.Windows.Forms.ToolStripMenuItem fAQsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whereIsTheHorizontalScrollBarToolStripMenuItem;
     }
 }
 
