@@ -22,6 +22,8 @@ namespace SpreadsheetGUI
         /// This is the class for the spreadsheet form
         /// It contains methods that fire in response to cell
         /// changes and to other user inputs like button pushes
+        /// 
+        /// Andrew Porter
         /// </summary>
         //Controller that acts as liaison between spreadsheet logic and UI
         Controller cont;
@@ -454,12 +456,14 @@ namespace SpreadsheetGUI
         }
        
         /// <summary>
-        /// Do Work that autosaves a spreadsheet for the user
+        /// Do Work that autosaves a spreadsheet for the user with each new data entry
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void autoSaver_DoWork(object sender, DoWorkEventArgs e)
         {
+            //As long as the file was saved at least once since the window opened,
+            //save the file to the original name the user entered.
             if (savedBefore)
             {
                 cont.Save(fileName);
@@ -488,7 +492,11 @@ namespace SpreadsheetGUI
                 "bottom of the screen.  Spreadsheet will close without confirmation because the " +
                 "spreadsheet is already saved. Can be disabled or enabled by checkbox at top");
         }
-
+        /// <summary>
+        /// Message box that answers a FAQ
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void howDoIEnterAFormulaToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Place an \"=\" before your formula. This designates your expression " +

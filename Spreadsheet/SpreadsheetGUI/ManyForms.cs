@@ -9,6 +9,9 @@ namespace SS
 {
     /// <summary>
     /// Keeps track of how many top-level forms are running
+    /// Used from demo
+    /// 
+    /// Andrew Porter
     /// </summary>
     class PS6ApplicationContext : ApplicationContext
     {

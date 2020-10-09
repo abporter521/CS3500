@@ -12,6 +12,8 @@ namespace SpreadsheetGUI
     /// <summary>
     /// This is a class that will act as a controller between the UI of PS6
     /// and the spreadsheet that is behind it.
+    /// 
+    /// Andrew Porter
     /// </summary>
     class Controller
     {
@@ -76,11 +78,14 @@ namespace SpreadsheetGUI
         public object GetCellValue (int col, int row)
         {
             FormulaError fe = new FormulaError();
+            //Check if the cell value is a formula error
             if (ss.GetCellValue(DigitToVar(col, row)) is FormulaError)
             {
+                //We return the Formula error in order to access the reason
                 fe = (FormulaError)ss.GetCellValue(DigitToVar(col,row));
                 return fe;
             }
+            //else we return the data
             else
                 return ss.GetCellValue(DigitToVar(col, row));
         }
@@ -100,10 +105,13 @@ namespace SpreadsheetGUI
         /// <returns></returns>
         public HashSet<Tuple<int,int>> GetNonEmptyCells()
         {
+            //contains the coordinates in the spreadsheet
             HashSet<Tuple<int, int>> coordinates = new HashSet<Tuple<int, int>>();    
             LinkedList<string> cellNames = (LinkedList<string>) ss.GetNamesOfAllNonemptyCells();
+           //For each non empty cell
             foreach(string cell in cellNames)
             {
+                //Save the coordinates in a tuple and save the tuples to hashset
                 VarToDigit(cell, out int col, out int row);
                 coordinates.Add(new Tuple<int, int> (col, row ));
             }
